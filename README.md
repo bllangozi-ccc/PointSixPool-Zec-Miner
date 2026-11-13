@@ -1,10 +1,12 @@
-# Point6Miner · PointSixPool Zcash MICRO miner
+# PointSixPool Zec Miner
 
 **Official pool: [pointsixpool.com](https://pointsixpool.com)** · [ZEC pool](https://pointsixpool.com/pools/zec) · [Start mining](https://pointsixpool.com/start-mining?coin=zec)
 
+Previously published as Point6Miner (.6Miner). The current beta retains its original package and executable names.
+
 CPU mining with a local browser interface for Linux desktops and servers. Connect to PointSixPool’s Zcash mainnet MICRO mode with your public wallet address and a unique worker name. **Pool fee: 0.6%.**
 
-[Download the Linux beta](https://github.com/bllangozi-ccc/Point6Miner/releases/tag/v0.6.0-beta1) · [Pool setup](https://pointsixpool.com/start-mining?coin=zec) · [Live pool statistics](https://pointsixpool.com/pools/zec) · [Public stats API](https://pointsixpool.com/developers/pool-api)
+[Download the Linux beta](https://github.com/bllangozi-ccc/PointSixPool-Zec-Miner/releases/tag/v0.6.0-beta1) · [Pool setup](https://pointsixpool.com/start-mining?coin=zec) · [Live pool statistics](https://pointsixpool.com/pools/zec) · [Public stats API](https://pointsixpool.com/developers/pool-api)
 
 ## Choose your platform
 
@@ -60,4 +62,4 @@ The release archive is the existing website package, with unchanged executable b
 
 Source and upstream notices are included under `source/` and `licenses/`. Third-party components retain their respective terms. See [NOTICE.md](NOTICE.md). Do not infer a blanket open-source licence for files without an explicit licence notice.
 
-Ask setup questions through [GitHub Issues](https://github.com/bllangozi-ccc/Point6Miner/issues) or [pool help](https://pointsixpool.com/getting-started). Never post a private key, recovery phrase, password or authentication token.
+Ask setup questions through [GitHub Issues](https://github.com/bllangozi-ccc/PointSixPool-Zec-Miner/issues) or [pool help](https://pointsixpool.com/getting-started). Never post a private key, recovery phrase, password or authentication token.

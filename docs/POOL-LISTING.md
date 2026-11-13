@@ -26,7 +26,7 @@ Operator-provided information, checked 13 November 2026. Inclusion is subject to
 - [Directory adapter JSON](https://pointsixpool.com/api/listing/stats)
 - [Aggregate real-work JSON](https://pointsixpool.com/api/mining/stats)
 - [API documentation and freshness semantics](https://pointsixpool.com/developers/pool-api)
-- [Point6Miner Linux beta download](https://github.com/bllangozi-ccc/Point6Miner/releases/tag/v0.6.0-beta1)
+- [Point6Miner Linux beta download](https://github.com/bllangozi-ccc/PointSixPool-Zec-Miner/releases/tag/v0.6.0-beta1)
 
 A new, small pool can have long periods without a block. PPLNS/MICRO rewards require eligible work and actual mature pool blocks. SOLO rewards depend on finding a qualifying block. Accepted shares, deposits and operator payment tests must not be presented as mined income. No guaranteed returns, third-party endorsement, shielded-payout support or lowest-fee claim is made.
 
