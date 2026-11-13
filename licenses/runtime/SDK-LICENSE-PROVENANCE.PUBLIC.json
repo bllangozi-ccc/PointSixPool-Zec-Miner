@@ -1,0 +1,37 @@
+[
+  {
+    "source": "/usr/share/doc/libsodium-dev/copyright",
+    "file": "libsodium-dev-copyright.txt",
+    "sha256": "10d3576a7a0af8afb5601f358c06eb8c24b02192bb71ed4fb9a328a0979ec74b"
+  },
+  {
+    "source": "/usr/share/doc/libsodium23/copyright",
+    "file": "libsodium23-copyright.txt",
+    "sha256": "10d3576a7a0af8afb5601f358c06eb8c24b02192bb71ed4fb9a328a0979ec74b"
+  },
+  {
+    "source": "/usr/share/doc/libc6/copyright",
+    "file": "libc6-copyright.txt",
+    "sha256": "d3c95b56fa33e28b57860580f0baf4e4f4de2a268a2b80f1d031a5191bade265"
+  },
+  {
+    "source": "/usr/share/doc/libstdc++-13-dev/copyright",
+    "file": "libstdc++-13-dev-copyright.txt",
+    "sha256": "08c6f3dee4c19aa1e57eb7d4ad45829b2e99656313bd07fa0922e2553f500be5"
+  },
+  {
+    "source": "/usr/share/doc/libstdc++6/copyright",
+    "file": "libstdc++6-copyright.txt",
+    "sha256": "20390f8a6f3b1e4d7cb45dd8652dabb259bbef688cbad839bcdb0b9ba7252f79"
+  },
+  {
+    "source": "/usr/share/doc/gcc-13-base/copyright",
+    "file": "gcc-13-base-copyright.txt",
+    "sha256": "08c6f3dee4c19aa1e57eb7d4ad45829b2e99656313bd07fa0922e2553f500be5"
+  },
+  {
+    "source": "/usr/share/doc/gcc-14-base/copyright",
+    "file": "gcc-14-base-copyright.txt",
+    "sha256": "20390f8a6f3b1e4d7cb45dd8652dabb259bbef688cbad839bcdb0b9ba7252f79"
+  }
+]

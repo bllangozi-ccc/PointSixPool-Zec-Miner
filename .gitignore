@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+bin/
+obj/
+artifacts/
+*.dll
+*.exe
+*.tar.gz
+.env
+.env.*
+*.key
+*.pem
