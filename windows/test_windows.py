@@ -63,5 +63,36 @@ try:
  _,html=request('/');check('type="range"'in html and 'https://pointsixpool.com'in html,'performance slider and official pool link rendered')
 finally:
  p.kill();p.wait(timeout=10)
+# Exercise successful Start, duplicate Start, Stop and uncertain-result handling
+# with a synthetic child, never a solver, never a pool connection.
+for mode in ('running','uncertain'):
+ fixture=("import sys,threading;sys.path.insert(0,"+repr(str(P))+");import point6miner_ui as u;"
+          "u.GUARD=u.ParentExitGuard();u.verify=lambda:None;"
+          "u.command=lambda v,s:[sys.executable,'-u','-c',"+repr("import json,time,sys;"+("print(json.dumps({'Kind':'accepted','Message':'synthetic lifecycle fixture'}),flush=True);time.sleep(60)" if mode=='running' else "print(json.dumps({'Submitted':1,'Accepted':0,'Rejected':0,'Uncertain':1}),flush=True);sys.exit(4)"))+"];"
+          "server=u.ThreadingHTTPServer(('127.0.0.1',0),u.Handler);server.daemon_threads=True;"
+          "print('http://127.0.0.1:'+str(server.server_port)+'/#'+u.TOKEN,flush=True);server.serve_forever()")
+ controller=subprocess.Popen([sys.executable,'-u','-c',fixture],stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,cwd=P)
+ try:
+  base,token=controller.stdout.readline().strip().split('/#')
+  valid={'identity':'FixtureID','kind':'registered','worker':'test','threads':1,'hours':1}
+  check(request('/api/start',valid)[0]==200,'synthetic Start accepted: '+mode)
+  until=time.monotonic()+10;state={}
+  while time.monotonic()<until:
+   state=json.loads(request('/api/status')[1])
+   if mode=='running' and state['accepted']==1:break
+   if mode=='uncertain' and not state['running']:break
+   time.sleep(.1)
+  if mode=='running':
+   check(state.get('running')and state.get('accepted')==1,'real Windows UI processes synthetic child status')
+   check(request('/api/start',valid)[0]==400,'duplicate Start refused while running')
+   check(request('/api/stop',{})[0]==200,'Stop terminates synthetic child tree')
+   until=time.monotonic()+5
+   while json.loads(request('/api/status')[1])['running'] and time.monotonic()<until:time.sleep(.1)
+   check(not json.loads(request('/api/status')[1])['running'],'Stop leaves UI idle')
+  else:
+   check(not state.get('running')and state.get('uncertain')==1 and 'uncertain'in state.get('state','').lower(),'uncertain acknowledgement halts synthetic session')
+   time.sleep(3);check(json.loads(request('/api/status')[1])['sessions']==1,'uncertain synthetic share never triggers automatic replay')
+ finally:controller.kill();controller.wait(timeout=10)
+
 (P.parent/'WINDOWS-NONMINING-TESTS.PUBLIC.json').write_text(json.dumps({'passed':True,'checks':checks,'native_windows':True,'cryptomining_or_pool_network_connections':False,'proof_generation':False},indent=2)+'\n')
 print(json.dumps({'passed':True,'checks':len(checks),'cryptomining':False}))

@@ -23,7 +23,7 @@ jobs:
         shell: msys2 {0}
         run: |
           mkdir -p windows/package
-          g++ -std=c++17 -O3 -static -pthread -DATOMIC -march=x86-64 -mtune=generic -fno-strict-aliasing -fstack-protector-strong -D_FORTIFY_SOURCE=2 -Wall -Wno-unused-function -Wno-unused-variable source/native-provenance/solver-fast.cpp source/native-provenance/reviewed/blake/blake2b.cpp -o windows/package/point6miner-equihash.exe
+          g++ -std=c++17 -O3 -static -pthread -DATOMIC -march=x86-64 -mtune=generic -fno-strict-aliasing -fstack-protector-strong -D_FORTIFY_SOURCE=2 -Wall -Wno-unused-function -Wno-unused-variable -Wl,--no-insert-timestamp source/native-provenance/solver-fast.cpp source/native-provenance/reviewed/blake/blake2b.cpp -o windows/package/point6miner-equihash.exe
       - name: Build managed client and prepare candidate
         shell: pwsh
         run: ./windows/build.ps1

@@ -2,7 +2,7 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $package = Join-Path $PSScriptRoot 'package'
 New-Item -ItemType Directory -Force $package | Out-Null
-& dotnet publish (Join-Path $root 'source/Point6Miner.Cli/Point6Miner.Cli.csproj') -c Release -r win-x64 --self-contained false -p:UseAppHost=false -p:DebugType=None -p:ContinuousIntegrationBuild=true -o $package
+& dotnet publish (Join-Path $root 'source/Point6Miner.Cli/Point6Miner.Cli.csproj') -c Release -r win-x64 --self-contained false -p:UseAppHost=false -p:IncludeSourceRevisionInInformationalVersion=false -p:DebugType=None -p:ContinuousIntegrationBuild=true -o $package
 if ($LASTEXITCODE -ne 0) { throw 'Windows managed client build failed' }
 Copy-Item (Join-Path $PSScriptRoot 'point6miner_ui.py') $package
 Copy-Item (Join-Path $PSScriptRoot 'windows_resources.py') $package
