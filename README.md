@@ -1,5 +1,7 @@
 # Point6Miner · PointSixPool Zcash MICRO miner
 
+**Official pool: [pointsixpool.com](https://pointsixpool.com)** · [ZEC pool](https://pointsixpool.com/pools/zec) · [Start mining](https://pointsixpool.com/start-mining?coin=zec)
+
 CPU mining with a local browser interface for Linux desktops and servers. Connect to PointSixPool’s Zcash mainnet MICRO mode with your public wallet address and a unique worker name. **Pool fee: 0.6%.**
 
 [Download the Linux beta](https://github.com/bllangozi-ccc/Point6Miner/releases/tag/v0.6.0-beta1) · [Pool setup](https://pointsixpool.com/start-mining?coin=zec) · [Live pool statistics](https://pointsixpool.com/pools/zec) · [Public stats API](https://pointsixpool.com/developers/pool-api)
