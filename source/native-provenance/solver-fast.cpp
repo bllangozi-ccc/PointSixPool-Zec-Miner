@@ -66,7 +66,11 @@ int main(int argc,char** argv){
   else if(option=="--max-seconds"&&!gottime&&(value=number(argv[i+1],300))>0){seconds=value;gottime=true;}
   else{std::cerr<<"invalid option or range\n";return 2;}
  }
- std::signal(SIGINT,stop);std::signal(SIGTERM,stop);std::signal(SIGPIPE,SIG_IGN);
+ std::signal(SIGINT,stop);std::signal(SIGTERM,stop);
+#ifndef _WIN32
+ std::signal(SIGPIPE,SIG_IGN);
+#endif
+
  try{
   std::array<char,140> header{};if(!readheader(header)){std::cerr<<"expected one140-byte header as280hex characters\n";return 2;}
   if(interrupted)return 130;

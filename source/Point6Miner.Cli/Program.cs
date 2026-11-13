@@ -4,12 +4,12 @@ using System.Text.Json;
 
 if (args.Length == 0 || args.Contains("--help"))
 {
-    Console.WriteLine("Point6Miner ZEC MICRO CPU miner for Linux x86_64. No mining starts by default.\n" +
+    Console.WriteLine("PointSixPool Zec Miner ZEC MICRO CPU client. No mining starts by default.\n" +
         "--probe|--mine --pool stratum+tcp://host:port --address ZEC_T_ADDRESS --worker NAME\n" +
         "For --mine: --solver ABSOLUTE_PATH --solver-sha256 SHA256\n" +
         "Optional: --difficulty POSITIVE_NUMBER --max-seconds 240 --max-shares 1 --reconnects 0 --solver-seconds 120 --cpu-seconds 110 --solver-memory-mib 2048 --solver-threads 1\n" +
         "Desktop/server .NET 10 CLI. One CPU solver at a time; bounded run and process watchdogs.\n" +
-        "Linux public beta. Windows/GPU/other coins are not included; rewards depend on actual pool blocks.");
+        "Use a qualified platform package. GPU/other coins are not included; rewards depend on actual pool blocks.");
     return 0;
 }
 try

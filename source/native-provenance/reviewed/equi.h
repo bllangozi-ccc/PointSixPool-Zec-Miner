@@ -2,7 +2,11 @@
 // Copyright (c) 2016-2016 John Tromp
 
 #include "blake/blake2.h"
-#ifdef __APPLE__
+#if defined(_WIN32)
+// Windows x64 is little-endian; MinGW supplies the byteswap intrinsic.
+#define htole32(x) (x)
+#define htobe32(x) __builtin_bswap32(x)
+#elif defined(__APPLE__)
 #include "osx_barrier.h"
 #include <machine/endian.h>
 #include <libkern/OSByteOrder.h>

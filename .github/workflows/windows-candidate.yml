@@ -1,0 +1,46 @@
+name: Windows candidate build and non-mining checks
+on:
+  push:
+    branches: [windows-beta]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-2025
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: '10.0.x'
+      - uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e
+        with:
+          msystem: MINGW64
+          update: false
+          install: mingw-w64-x86_64-gcc
+      - name: Build Windows native backend (no solver execution)
+        shell: msys2 {0}
+        run: |
+          mkdir -p windows/package
+          g++ -std=c++17 -O3 -static -pthread -DATOMIC -march=x86-64 -mtune=generic -fno-strict-aliasing -fstack-protector-strong -D_FORTIFY_SOURCE=2 -Wall -Wno-unused-function -Wno-unused-variable source/native-provenance/solver-fast.cpp source/native-provenance/reviewed/blake/blake2b.cpp -o windows/package/point6miner-equihash.exe
+      - name: Build managed client and prepare candidate
+        shell: pwsh
+        run: ./windows/build.ps1
+      - name: Native Windows non-mining lifecycle and safety checks
+        shell: pwsh
+        run: python windows/test_windows.py
+      - name: Package candidate (not a public release)
+        shell: pwsh
+        run: |
+          Compress-Archive -Path windows/package/* -DestinationPath windows/PointSixPool-Zec-Miner-windows-x64-candidate.zip
+          (Get-FileHash windows/PointSixPool-Zec-Miner-windows-x64-candidate.zip -Algorithm SHA256).Hash.ToLowerInvariant() | Set-Content windows/ARCHIVE-SHA256.txt
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: windows-candidate-and-checks
+          path: |
+            windows/PointSixPool-Zec-Miner-windows-x64-candidate.zip
+            windows/ARCHIVE-SHA256.txt
+            windows/WINDOWS-NONMINING-TESTS.PUBLIC.json
+          retention-days: 7
