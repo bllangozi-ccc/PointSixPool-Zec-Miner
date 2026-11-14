@@ -30,6 +30,9 @@ jobs:
       - name: Native Windows non-mining lifecycle and safety checks
         shell: pwsh
         run: python windows/test_windows.py
+      - name: Build double-click desktop and non-mining GUI smoke check
+        shell: pwsh
+        run: ./windows/build-desktop.ps1
       - name: Package candidate (not a public release)
         shell: pwsh
         run: |
@@ -43,4 +46,7 @@ jobs:
             windows/PointSixPool-Zec-Miner-windows-x64-candidate.zip
             windows/ARCHIVE-SHA256.txt
             windows/WINDOWS-NONMINING-TESTS.PUBLIC.json
+            windows/desktop-dist/PointSixPool-Zec-Miner.exe
+            windows/DESKTOP-SHA256.txt
+            windows/DESKTOP-SMOKE.PUBLIC.json
           retention-days: 7

@@ -10,3 +10,8 @@ artifacts/
 .env.*
 *.key
 *.pem
+
+windows/desktop-payload/
+windows/desktop-work/
+windows/desktop-dist/
+windows/desktop/windows_resources.py

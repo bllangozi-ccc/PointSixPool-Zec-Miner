@@ -11,3 +11,7 @@ Preset: `stratum+tcp://zec4.pointsixpool.com:3034` (MICRO). The UI does not offe
 No Windows service, scheduled task, autorun, background updater, administrator elevation, SSH setup, private wallet key or recovery phrase is needed. The download is an unsigned portable beta, not an Authenticode-certified installer. No claim of SmartScreen or antivirus approval is made; do not disable protection.
 
 GitHub-hosted checks build software and exercise non-mining tests only. They do not connect to mining pools or generate proof-of-work. Any solver computation and live-share qualification must run outside Actions on owner-authorised resources.
+
+If Windows says `py is not recognised`, Python 3 may still be installed under `python`. In the extracted miner folder, try `python -B point6miner_ui.py`. The updated launcher checks both commands. If neither works, install Python 3 from the official Python website, reopen the command window, and retry. Do not type these Windows commands into the pool server’s PuTTY session.
+
+The new native desktop executable is under development. Its main screen has Wallet Address, Worker Name, Coin ZEC and Start Mining; all mining requires explicit Start. The self-contained candidate bundles its Python GUI and .NET mining runtime, so users need no Python commands or separate runtime installation. It remains unpublished until Windows executable checks and pool-side qualification pass. No NiceHash code, binaries or personal settings are included.
