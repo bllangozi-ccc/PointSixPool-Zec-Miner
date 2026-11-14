@@ -16,12 +16,11 @@ LOG=collections.deque(maxlen=40)
 def verify():
  for name,pin in EXPECTED.items():
   p=ROOT/name
-  if p.is_symlink()or not p.is_file()or p.stat().st_size>8*1024*1024 or hashlib.sha256(p.read_bytes()).hexdigest()!=pin:raise ValueError('Package integrity check failed: '+name)
+  if p.is_symlink()or not p.is_file()or p.stat().st_size>32*1024*1024 or hashlib.sha256(p.read_bytes()).hexdigest()!=pin:raise ValueError('Package integrity check failed: '+name)
  if platform.system()!='Linux'or platform.machine()not in('x86_64','amd64'):raise ValueError('This release supports Linux x86_64 only.')
  if 'avx2'not in Path('/proc/cpuinfo').read_text():raise ValueError('This CPU does not provide the required AVX2 support.')
- if not shutil.which('dotnet')or not shutil.which('taskset'):raise ValueError('Install the .NET10 runtime and taskset first; see README.')
- result=subprocess.run(['dotnet','--list-runtimes'],capture_output=True,text=True,timeout=5)
- if result.returncode or not any(line.startswith('Microsoft.NETCore.App 10.')for line in result.stdout.splitlines()):raise ValueError('The .NET10 runtime is required.')
+ if not shutil.which('taskset'):raise ValueError('This Linux system needs taskset (the util-linux package). See HELP.txt.')
+ if not (ROOT/'backend/Point6Miner.Cli').is_file():raise ValueError('The bundled mining runtime is missing. Extract the complete download again.')
  if os.geteuid()==0:raise ValueError('Run Point6Miner as your normal user, not root.')
 
 def options(value):
@@ -46,7 +45,7 @@ def options(value):
  return {**value,'cpus':available[:threads]}
 
 def command(v,seconds):
- return ['taskset','-c',','.join(map(str,v['cpus'])),'dotnet',str(ROOT/'Point6Miner.Cli.dll'),'--mine','--pool',POOL,'--address',v['identity'],'--identity-kind',v['kind'],'--worker',v['worker'],'--solver',str(ROOT/'point6miner-equihash'),'--solver-sha256',EXPECTED['point6miner-equihash'],'--solver-threads',str(v['threads']),'--difficulty','0.0001220703125','--max-seconds',str(max(1,min(3600,int(seconds)))),'--max-shares','100','--reconnects','0','--solver-seconds','120','--cpu-seconds','110','--solver-memory-mib','2048']
+ return ['taskset','-c',','.join(map(str,v['cpus'])),str(ROOT/'backend/Point6Miner.Cli'),'--mine','--pool',POOL,'--address',v['identity'],'--identity-kind',v['kind'],'--worker',v['worker'],'--solver',str(ROOT/'point6miner-equihash'),'--solver-sha256',EXPECTED['point6miner-equihash'],'--solver-threads',str(v['threads']),'--difficulty','0.0001220703125','--max-seconds',str(max(1,min(3600,int(seconds)))),'--max-shares','100','--reconnects','0','--solver-seconds','120','--cpu-seconds','110','--solver-memory-mib','2048']
 
 def stop():
  STOP.set()

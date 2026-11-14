@@ -1,3 +1,5 @@
+For simple instructions, open **HELP.txt** first.
+
 # PointSixPool Zec Miner — next desktop/server update
 
 This is development-source guidance. Existing published beta downloads remain unchanged until the new package is qualified and released.
@@ -20,7 +22,7 @@ From the extracted next-version package, run `./Start-Server` as your normal use
 - `./Start-Server --disable-autostart`: stop and disable automatic startup.
 - `./Start-Server --status`: inspect the service.
 
-Foreground mining stops with Ctrl+C. Service control never restarts a session with uncertain share acknowledgements. The normal-user package requires Linux x86_64/AVX2, Python3, .NET10 and taskset; no prerequisite installer is bundled yet.
+Foreground mining stops with Ctrl+C. Service control never restarts a session with uncertain share acknowledgements. The normal-user package requires Linux x86_64/AVX2, Python3 and taskset; the .NET runtime is bundled.
 
 Official pool: https://pointsixpool.com · MICRO: zec4.pointsixpool.com:3034 · fee0.6% · minimum0.001ZEC. Earnings require actual mature blocks and eligible work; accepted shares alone are not spendable earnings.
 

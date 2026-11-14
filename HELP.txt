@@ -1,0 +1,53 @@
+POINTSIXPOOL MINER — QUICK START
+
+WINDOWS PC
+1. Open PointSixPool Miner.exe.
+2. Paste your public ZEC receiving wallet address.
+3. Give this machine a name, for example Home-PC.
+4. Leave performance on Auto and press Start Mining.
+Press Stop Mining to stop. Closing the app also stops mining.
+No Python or .NET installation is needed for the Windows app.
+
+LINUX DESKTOP
+1. Extract the complete Linux download.
+2. Open Start-Desktop and choose Run if your file manager asks.
+3. In the browser window, enter your wallet and machine name.
+4. Leave performance on Auto and press Start Mining.
+If your file manager opens the launcher as text, open a terminal in
+this folder and enter: ./Start-Desktop
+Linux needs Python 3 and taskset (util-linux). The mining runtime is bundled.
+Use your normal account, not root. Close/stop the miner when finished.
+
+LINUX SERVER (NO DESKTOP)
+1. Extract the complete Linux download and open its folder.
+2. Enter: ./Start-Server
+3. Paste your public ZEC wallet address and give this machine a name.
+4. Press Enter to keep Auto performance.
+5. Choose whether to enable automatic startup.
+Saving setup starts mining. Ctrl+C stops a foreground miner.
+For an automatic worker: ./Start-Server --stop
+To disable automatic startup: ./Start-Server --disable-autostart
+To change wallet or machine name: ./Start-Server --setup
+Automatic startup uses your Linux user service. Startup before login
+requires administrator-enabled user lingering; setup checks and reports it.
+
+WHAT TO EXPECT
+ZEC MICRO is selected automatically. No pool address needs typing.
+This version uses your CPU, not your graphics cards. It requires an
+AVX2-capable 64-bit CPU and at least 3 GiB free memory.
+Accepted shares mean work was accepted, not money already earned.
+Rewards need eligible work and mature pool blocks. Electricity may cost
+more than earnings. Pool fee: 0.6%. MICRO minimum payout: 0.001 ZEC.
+
+AUTO, TEMPERATURE AND POWER
+Auto begins conservatively. Stop before changing the speed slider.
+Supported Linux CPU sensors enable speed reduction at 75 C and stopping
+at 85 C. Missing sensors show unavailable. Windows temperature/power
+monitoring is not yet supported. Keep your computer's normal cooling enabled.
+CPU-package power excludes the rest of your computer. Measured presets
+need sufficient real accepted work and valid energy samples; otherwise Auto
+keeps its conservative default. No benchmark starts mining automatically.
+
+Only enter your PUBLIC receiving wallet address. Never enter a seed,
+private key, wallet passphrase or payment password.
+Help and current pool rules: https://pointsixpool.com/point6miner
