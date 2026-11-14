@@ -3,6 +3,7 @@ import sys,os,json,re,threading,webbrowser
 from pathlib import Path
 import tkinter as tk
 from tkinter import ttk,messagebox
+from miner_efficiency import recommended_measured
 from performance_policy import recommend_threads,windows_battery
 
 class MinerWindow:
@@ -24,14 +25,14 @@ class MinerWindow:
   for i,(key,title)in enumerate([('accepted','Accepted shares'),('rejected','Rejected shares'),('uncertain','Uncertain acknowledgements')]):
    metrics.columnconfigure(i,weight=1);f=ttk.Frame(metrics,padding=10);f.grid(row=0,column=i,sticky='ew');ttk.Label(f,text=title,style='Muted.TLabel').pack();v=tk.StringVar(value='0');self.counts[key]=v;ttk.Label(f,textvariable=v,style='Metric.TLabel').pack()
   ttk.Label(dash,text='Opening this app never starts mining. Rewards require eligible work and mature pool blocks.',style='Muted.TLabel',wraplength=800).pack(anchor='w');self.messages=tk.Text(dash,height=3,font=('Consolas',9),state='disabled',bg='#f9fbfa',fg='#29483b',relief='flat');self.messages.pack(fill='both',expand=True,pady=(10,0))
-  ttk.Label(devices,text='CPU mining',style='Heading.TLabel').pack(anchor='w');ttk.Label(devices,text=f'Available CPU threads in this build: {min(4,len(backend.available_cpus()))}\nAVX2 CPU and at least 3 GiB free RAM required before starting.\nGPU mining is not supported by this build.\nThe performance slider sets CPU threads; it is not a temperature limiter.',wraplength=780).pack(anchor='w',pady=20);ttk.Label(devices,text='Run time · hours').pack(anchor='w');self.duration=ttk.Spinbox(devices,from_=1,to=24,textvariable=self.hours,width=10);self.duration.pack(anchor='w',pady=8)
+  ttk.Label(devices,text='CPU mining',style='Heading.TLabel').pack(anchor='w');ttk.Label(devices,text=f'Available CPU threads in this build: {min(4,len(backend.available_cpus()))}\nAVX2 CPU and at least 3 GiB free RAM required before starting.\nGPU mining is not supported by this build.\nThermal protection requires a supported CPU sensor; unavailable sensors provide no thermal control.',wraplength=780).pack(anchor='w',pady=20);self.telemetry=tk.StringVar(value='Hardware telemetry: reading…');ttk.Label(devices,textvariable=self.telemetry,wraplength=780).pack(anchor='w',pady=10);ttk.Label(devices,text='Run time · hours').pack(anchor='w');self.duration=ttk.Spinbox(devices,from_=1,to=24,textvariable=self.hours,width=10);self.duration.pack(anchor='w',pady=8)
   ttk.Label(help_page,text='Start in three steps',style='Heading.TLabel').pack(anchor='w');ttk.Label(help_page,text='1. Add your public ZEC receiving wallet or registered pool ID.\n2. Name this worker and choose its performance.\n3. Press Start Mining. Press Stop to finish.\n\nZEC MICRO preset: zec4.pointsixpool.com:3034\nPool fee: 0.6% · Minimum payout: 0.001 ZEC\nRewards depend on actual blocks, maturity and eligible work.\nCPU electricity can cost more than earnings.\n\nNever enter private keys, wallet seeds or payment passphrases.',wraplength=780).pack(anchor='w',pady=20);ttk.Button(help_page,text='Open pool help ↗',command=lambda:webbrowser.open('https://pointsixpool.com/getting-started')).pack(anchor='w')
   footer=ttk.Frame(root,padding=(20,8));footer.pack(fill='x');ttk.Button(footer,text='pointsixpool.com ↗',command=lambda:webbrowser.open('https://pointsixpool.com')).pack(side='left');ttk.Label(footer,text='No automatic mining or background startup service.',style='Muted.TLabel').pack(side='right');self.root.after(300,self.refresh)
  def performance(self,value):
   n=max(1,min(4,len(self.b.available_cpus()),round(float(value))));self.threads.set(n);self.thread_label.set(('Auto'if self.auto_mode else'Manual')+f' · {n} CPU thread'+('s'if n!=1 else''))
  def auto_performance(self):
   try:
-   n=recommend_threads(len(self.b.available_cpus()),self.b.free_memory_kib(),windows_battery());self.setting_auto=True;self.auto_mode=True;self.slider.set(n);self.performance(n)
+   n=min(recommended_measured() or 4,recommend_threads(len(self.b.available_cpus()),self.b.free_memory_kib(),windows_battery()));self.setting_auto=True;self.auto_mode=True;self.slider.set(n);self.performance(n)
   except (OSError,ValueError):self.setting_auto=True;self.auto_mode=True;self.slider.set(1);self.performance(1)
   finally:self.setting_auto=False
  def toggle(self):
@@ -50,7 +51,7 @@ class MinerWindow:
  def refresh(self):
   if self.closing:return
   with self.b.LOCK:s=dict(self.b.STATE);logs=list(self.b.LOG)
-  self.running=s['running'];self.status.set(s['state']);self.power.configure(text='■  Stop Mining'if self.running else'▶  Start Mining');self.power.state(['disabled']if self.busy else['!disabled'])
+  e=s.get('efficiency',{}); temp=s.get('temperature_c'); watts=e.get('average_watts'); work=e.get('accepted_work_per_joule');self.telemetry.set(f"CPU threads available: {s['hardware']['available_cpu_threads']} · Temperature: {str(round(temp,1))+' °C' if temp is not None else 'unavailable'}\nThermal control: {s.get('thermal_control','unavailable')} · Measured power: {str(round(watts,2))+' W (CPU package)' if watts is not None else 'unavailable'}\nAccepted work/J: {format(work,'.5g') if work is not None else 'collecting / unavailable'} · Power excludes the rest of the machine.");self.running=s['running'];self.status.set(s['state']);self.power.configure(text='■  Stop Mining'if self.running else'▶  Start Mining');self.power.state(['disabled']if self.busy else['!disabled'])
   for w in [self.address_box,self.worker_box,self.slider,self.duration,self.auto_button]:w.state(['disabled']if self.running or self.busy else['!disabled'])
   self.idtype.configure(state='disabled'if self.running or self.busy else'readonly')
   for k,v in self.counts.items():v.set(str(s[k]))

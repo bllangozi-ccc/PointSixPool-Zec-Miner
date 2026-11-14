@@ -1,3 +1,4 @@
+from miner_efficiency import hardware, monitor
 #!/usr/bin/env python3
 """PointSixPool Zec Miner Windows candidate. Loopback UI; never mines until Start."""
 from pathlib import Path
@@ -9,8 +10,8 @@ GUARD=None
 EXPECTED=json.loads((ROOT/'WINDOWS-PINS.json').read_text())
 POOL='stratum+tcp://zec4.pointsixpool.com:3034'
 TOKEN=secrets.token_urlsafe(32)
-LOCK=threading.RLock();STOP=threading.Event();CHILD=None;RUNNER=None
-STATE={'running':False,'state':'Ready. Mining is off.','accepted':0,'rejected':0,'uncertain':0,'sessions':0}
+LOCK=threading.RLock();STOP=threading.Event();CHILD=None;RUNNER=None;TELEMETRY=None
+STATE={'running':False,'state':'Ready. Mining is off.','accepted':0,'rejected':0,'uncertain':0,'sessions':0,'accepted_work':0.,'hardware':hardware()}
 LOG=collections.deque(maxlen=40)
 
 def verify():
@@ -82,6 +83,10 @@ def run(v):
       with LOCK:
        LOG.append(str(event.get('Kind',''))[:32]+': '+str(event.get('Message',''))[:200])
        if event['Kind']in('accepted','rejected'):STATE[event['Kind']]+=1
+       if event['Kind']=='accepted':
+        target=event.get('AcceptedTarget')
+        if isinstance(target,str) and re.fullmatch(r'[0-9A-Fa-f]{64}',target):STATE['accepted_work']+=2.**256/(int(target,16)+1)
+        else:STATE['work_measurement_unavailable']=True
     except (ValueError,TypeError):pass
    code=p.wait(timeout=10)
    with LOCK:CHILD=None
@@ -102,8 +107,9 @@ def run(v):
   terminate(p)
 
 def start(value):
- global RUNNER
+ global RUNNER,TELEMETRY
  v=options(value);verify()
  with LOCK:
   if RUNNER is not None and RUNNER.is_alive():raise ValueError('Already running. Stop before changing setup.')
-  STOP.clear();STATE.update(running=True,state='Starting…',accepted=0,rejected=0,uncertain=0,sessions=0);LOG.clear();RUNNER=threading.Thread(target=run,args=(v,),daemon=True);RUNNER.start()
+  if TELEMETRY is not None and TELEMETRY.is_alive():raise ValueError('Previous telemetry is stopping. Try again in a moment.')
+  STOP.clear();STATE.update(running=True,state='Starting…',accepted=0,rejected=0,uncertain=0,sessions=0,accepted_work=0.,work_measurement_unavailable=False);LOG.clear();TELEMETRY=threading.Thread(target=monitor,args=(sys.modules[__name__],v['threads']),daemon=True);TELEMETRY.start();RUNNER=threading.Thread(target=run,args=(v,),daemon=True);RUNNER.start()

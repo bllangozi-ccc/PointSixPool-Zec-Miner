@@ -40,7 +40,7 @@ public sealed record StratumRunOptions(Uri Pool, string Address, string Worker, 
     }
 }
 
-public sealed record StratumEvent(string Kind, string Message);
+public sealed record StratumEvent(string Kind, string Message, string? AcceptedTarget = null);
 public sealed record StratumRunResult(int Sessions, int Jobs, int Solutions, int TargetMatches,
     int Submitted, int Accepted, int Rejected, int Uncertain, bool ProbeOnly, string StopReason);
 
@@ -311,7 +311,7 @@ public sealed class ZecStratumMiner
                         try
                         {
                             JsonElement accepted = await submission;
-                            if (accepted.ValueKind == JsonValueKind.True) { totals.Accepted++; progress?.Invoke(new("accepted", "Pool acknowledged a current-job share.")); }
+                            if (accepted.ValueKind == JsonValueKind.True) { totals.Accepted++; progress?.Invoke(new("accepted", "Pool acknowledged a current-job share.", Convert.ToHexString(assigned))); }
                             else { totals.Rejected++; progress?.Invoke(new("rejected", "Pool returned a negative share acknowledgement.")); }
                         }
                         catch (StratumRequestRejectedException)

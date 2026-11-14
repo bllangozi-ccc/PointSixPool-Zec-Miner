@@ -34,6 +34,7 @@ jobs:
         shell: pwsh
         run: |
           python windows/desktop/test_performance.py
+          python tests/test_efficiency.py
           ./windows/build-desktop.ps1
       - name: Package candidate (not a public release)
         shell: pwsh
@@ -55,10 +56,27 @@ jobs:
 
   linux-startup-checks:
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - name: Non-mining Linux setup and performance checks
         run: |
           python3 -B windows/desktop/test_performance.py
           python3 -B tests/test_linux_start.py
+          python3 -B tests/test_efficiency.py
+
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build Linux CPU candidate without mining
+        run: |
+          mkdir -p linux-candidate
+          dotnet publish source/Point6Miner.Cli/Point6Miner.Cli.csproj -c Release --self-contained false -p:UseAppHost=false -p:IncludeSourceRevisionInInformationalVersion=false -o linux-candidate
+          g++ -std=c++17 -O3 -pthread -DATOMIC -march=x86-64 -mtune=generic -fno-strict-aliasing -fstack-protector-strong -D_FORTIFY_SOURCE=2 source/native-provenance/solver-fast.cpp source/native-provenance/reviewed/blake/blake2b.cpp -o linux-candidate/point6miner-equihash
+          python3 -B tools/package-linux.py
+          dotnet linux-candidate/Point6Miner.Cli.dll --help
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: linux-candidate-and-instructions
+          path: PointSixPool-Zec-Miner-linux-x64-candidate.tar.gz
+          retention-days: 7

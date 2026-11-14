@@ -23,3 +23,25 @@ From the extracted next-version package, run `./Start-Server` as your normal use
 Foreground mining stops with Ctrl+C. Service control never restarts a session with uncertain share acknowledgements. The normal-user package requires Linux x86_64/AVX2, Python3, .NET10 and taskset; no prerequisite installer is bundled yet.
 
 Official pool: https://pointsixpool.com · MICRO: zec4.pointsixpool.com:3034 · fee0.6% · minimum0.001ZEC. Earnings require actual mature blocks and eligible work; accepted shares alone are not spendable earnings.
+
+## Hardware, heat and efficiency
+
+Devices shows detected CPU availability. This release still mines with the CPU only.
+Linux reads supported CPU hwmon temperatures and readable Intel RAPL package-energy
+counters. No root privileges or sensor driver installation is requested. Windows CPU
+temperature and power are currently unavailable; the app cannot provide thermal protection
+without a supported sensor. Firmware cooling and thermal limits must remain enabled.
+
+At 75°C, a supported Linux CPU sensor triggers a one-CPU affinity limit for the miner
+and its descendants. At 85°C, mining stops. Lost sensors after throttling also stop mining.
+Cooling never automatically increases speed or restarts a stopped session. Press Stop,
+let the host cool, then Start manually. These are conservative software thresholds,
+not guarantees against overheating or replacements for the manufacturer's limits.
+
+Efficiency uses acknowledged shares weighted by their actual assigned 256-bit target.
+The displayed accepted-work/J measure is a statistical work estimate, not measured solver
+hashrate or earnings. Power covers CPU packages only, excluding GPU, memory, fans and PSU.
+Missing readings, counter discontinuities, or long sampling gaps keep results unavailable.
+Measured Auto presets need at least 30 minutes and 20 accepted shares with complete energy
+coverage. Results remain local, contain no wallet details, and are never fabricated.
+Until qualified measurements exist, Auto keeps the conservative initial recommendation.
