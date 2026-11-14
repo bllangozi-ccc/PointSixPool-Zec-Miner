@@ -107,4 +107,3 @@ def start(value):
  with LOCK:
   if RUNNER is not None and RUNNER.is_alive():raise ValueError('Already running. Stop before changing setup.')
   STOP.clear();STATE.update(running=True,state='Starting…',accepted=0,rejected=0,uncertain=0,sessions=0);LOG.clear();RUNNER=threading.Thread(target=run,args=(v,),daemon=True);RUNNER.start()
-
