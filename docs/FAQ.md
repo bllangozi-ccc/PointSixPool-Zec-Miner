@@ -1,7 +1,6 @@
-# PointSixPool Miner setup FAQ — development candidate
+# PointSixPool Miner setup FAQ
 
-These instructions describe the configured-download update on `windows-beta`.
-They do not change the availability or requirements of older public releases.
+These instructions describe the current configured downloads. Older releases retain their original requirements.
 Pool: https://pointsixpool.com · Miner page: https://pointsixpool.com/point6miner
 
 ## Do I need an account?

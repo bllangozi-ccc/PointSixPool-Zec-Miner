@@ -1,67 +1,43 @@
-> Development update: [simple configured desktop downloads and two-step Linux installation](docs/SIMPLE-SETUP.md) are being qualified on `windows-beta`. [Setup FAQ](docs/FAQ.md). Windows and Linux candidate build checks passed; website delivery and public download replacement await exact release approval. Existing released downloads remain unchanged until approval.
-
 # PointSixPool Zec Miner
 
-**Official pool: [pointsixpool.com](https://pointsixpool.com)** · [ZEC pool](https://pointsixpool.com/pools/zec) · [Start mining](https://pointsixpool.com/start-mining?coin=zec)
+**[PointSixPool](https://pointsixpool.com)** · [Configured downloads](https://pointsixpool.com/point6miner) · [ZEC pool](https://pointsixpool.com/pools/zec) · [Live statistics](https://pointsixpool.com/profits) · [Public API](https://pointsixpool.com/developers/pool-api)
 
-Previously published as Point6Miner (.6Miner). The current beta retains its original package and executable names.
+Windows and Linux CPU mining for PointSixPool's Zcash mainnet MICRO mode. **Pool fee: 0.6%.** Previously called Point6Miner (.6Miner).
 
-CPU mining with a local browser interface for Linux desktops and servers. Connect to PointSixPool’s Zcash mainnet MICRO mode with your public wallet address and a unique worker name. **Pool fee: 0.6%.**
+## Choose your setup
 
-[Download the Linux beta](https://github.com/bllangozi-ccc/PointSixPool-Zec-Miner/releases/tag/v0.6.0-beta1) · [Pool setup](https://pointsixpool.com/start-mining?coin=zec) · [Live pool statistics](https://pointsixpool.com/pools/zec) · [Public stats API](https://pointsixpool.com/developers/pool-api)
+| Platform | Start here |
+| --- | --- |
+| Windows desktop | Download your configured ZIP, extract all files, open **PointSixPool Miner.exe**, press **Start Mining**. Python and .NET are bundled. |
+| Linux desktop | Download your configured ZIP, extract all files, open **Start-Desktop**, press **Start Mining**. Python3 and taskset are needed; .NET is bundled. |
+| Linux server | Choose Linux server on the miner page. In your root terminal run its generated install command, then `/start-mining`. |
 
-## Choose your platform
+Use **[the miner page](https://pointsixpool.com/point6miner)** to choose your public ZEC wallet or your own verified saved mining ID, machine name and region. Settings are included as a separate public configuration file. No account password, session token, payment key or seed is downloaded.
 
-| Platform | Availability | How it runs |
-| --- | --- | --- |
-| Linux desktop · x86_64 AVX2 | 0.6.0 beta1 | Local browser UI |
-| Linux server · x86_64 AVX2 | Same Linux package | Headless launch, local-only control UI |
-| Windows desktop | Not released | Native build and runtime qualification pending |
-| macOS, GPU and other coins | Not released | Future work |
+Opening or installing the application does not start mining. Root installs the Linux server service; actual mining runs as the dedicated `pointsix-miner` user. Stop with `/stop-mining`. Reboot autostart is optional, with instructions printed by the installer.
 
-Desktop and server are two launch modes of the same Linux build. Do not run the Linux download as a Windows application.
+[Full setup instructions](docs/SIMPLE-SETUP.md) · [Setup FAQ](docs/FAQ.md) · [Pool help](https://pointsixpool.com/getting-started)
 
-## Quick start · Linux desktop
+## Performance and hardware
 
-Install Python 3, the official [.NET 10 runtime](https://learn.microsoft.com/dotnet/core/install/linux), and `taskset` (util-linux). You need an AVX2-capable x86_64 CPU and at least 3 GiB of free memory.
+This beta needs an x86_64 AVX2 CPU and at least **3 GiB free RAM**. It does not mine with GPUs or phones. Auto starts conservatively; stop before changing the speed control. Measured presets require at least 30 minutes, 20 accepted shares and complete energy readings.
 
-1. Download the `.tar.gz` and `SHA256SUMS` from Releases.
-2. Run `sha256sum -c SHA256SUMS` alongside the downloaded archive.
-3. Extract the archive and open a terminal in its directory.
-4. Run as your normal user:
+Supported temperature sensors trigger reduced speed at 75°C and stopping at 85°C. Missing readings remain unavailable. Windows can read an already-running compatible LibreHardwareMonitor provider; the miner installs no sensor driver. Efficiency uses acknowledged difficulty-weighted work and sampled CPU-package energy, excluding the rest of the computer. It is not a profit forecast.
 
-```bash
-python3 point6miner_ui.py
-```
+The Linux runtime is bundled and does not require system ICU. Windows opens a native interface; Linux opens a local browser interface. Uncertain share acknowledgements stop rather than replaying the share. Mining is never run in GitHub Actions; build checks use help, settings import and non-mining lifecycle tests.
 
-Enter a public ZEC receiving address, choose a unique WorkerName such as `Point6-Rig`, and press Start. The mining identity is **WalletAddress.WorkerName**. Registered PointSixPool IDs are also supported subject to server authorization.
+## Pool and rewards
 
-MICRO preset: `stratum+tcp://zec4.pointsixpool.com:3034`. The public UI uses this fixed preset. This is not a claim that source code cannot be modified.
+The normal interface selects **ZEC MICRO**, port **3034**. The mining identity is **WalletAddress.WorkerName**, or an authorized registered mining ID. Use a unique name for each machine. **View my stats & earnings** opens your public worker group or signed-in dashboard.
 
-## Linux server
+EU, USA and ASIA choose matching hostnames. All currently route to one European server with shared accounting; they are not separate regional facilities. Regional rankings remain unavailable until connection attribution is verified.
 
-Use the same package on the server:
+MICRO contributes eligible work to the shared PPLNS pool. Accepted shares are not an instantly payable balance: rewards require actual blocks, maturity and eligible work. **0.6% pool fee; MICRO minimum payout 0.001 ZEC.** Network fees are separate. CPU electricity can cost more than rewards. [Reward rules](https://pointsixpool.com/payout-models). Public PPS+ is coming soon; ASIC PPLNS and SOLO setup is separate.
 
-```bash
-python3 point6miner_ui.py --no-browser
-```
+## Advanced downloads, integrity and support
 
-The control interface listens on `127.0.0.1` only. Use it on the same host. It is not a public web service. No server login or remote access credentials are part of miner configuration.
+The editable Linux archive and an unconfigured Windows executable are available in [Releases](https://github.com/bllangozi-ccc/PointSixPool-Zec-Miner/releases). The website's configured download is the easiest route. Check SHA256SUMS against downloaded files. Checksums detect changes; they are not an independent audit or an operating-system signing certificate.
 
-## Performance and controls
+Source availability is not a claim that modified software cannot connect elsewhere. Third-party components retain their own terms; see [NOTICE.md](NOTICE.md) and `licenses/`. Do not infer a blanket open-source licence for files without an explicit licence notice.
 
-Choose 1–4 available CPU threads; the default is one. This release uses a thread selector, not a percentage performance slider. Choose a session of 1–24 hours. Mining starts only after Start; Stop ends the child process group. There is no installation-time mining or automatic startup service. An uncertain share acknowledgement stops the session rather than replaying a share.
-
-## Rewards, fees and expectations
-
-MICRO contributes eligible work to the shared PPLNS pool. **Accepted shares are not an immediately payable balance.** Rewards require actual pool blocks, maturity and eligible work. The pool fee is **0.6%** and the MICRO payout minimum is **0.001 ZEC**. See the [current reward rules](https://pointsixpool.com/payout-models) before mining.
-
-CPU mining is much slower than Zcash ASIC mining. Electricity can exceed rewards; no earnings or block-finding rate is guaranteed. This beta does not include GPU mining, temperature telemetry or Windows binaries. Public PPS+ is coming soon, not available in this release.
-
-## Integrity, source and support
-
-The release archive is the existing website package, with unchanged executable bytes. SHA-256 checksums detect file changes; they are not an independent audit or operating-system code-signing certificate. `PACKAGE-MANIFEST.PUBLIC.json` describes the complete downloadable package; binaries are attached to Releases rather than committed here.
-
-Source and upstream notices are included under `source/` and `licenses/`. Third-party components retain their respective terms. See [NOTICE.md](NOTICE.md). Do not infer a blanket open-source licence for files without an explicit licence notice.
-
-Ask setup questions through [GitHub Issues](https://github.com/bllangozi-ccc/PointSixPool-Zec-Miner/issues) or [pool help](https://pointsixpool.com/getting-started). Never post a private key, recovery phrase, password or authentication token.
+[GitHub support](https://github.com/bllangozi-ccc/PointSixPool-Zec-Miner/issues) · [Forum guides](https://pointsixpool.com/forum). Never post private keys, recovery words, passwords or login tokens.

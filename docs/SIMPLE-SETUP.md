@@ -1,6 +1,6 @@
-# Simple setup — development candidate
+# Simple setup
 
-This workflow is being tested. Public deployment still requires its exact release approval.
+Configured Windows and Linux downloads are available at https://pointsixpool.com/point6miner.
 
 ## Windows desktop
 
@@ -18,7 +18,7 @@ Installation downloads and checks the exact package, handles supported missing p
 and creates a dedicated `pointsix-miner` user. The actual miner never runs as root.
 Stop with `/stop-mining`. Startup after reboot is optional and printed by the installer.
 Uncertain share acknowledgements stop the service; they do not trigger automatic replay.
-The .NET runtime is bundled. Current x86_64/AVX2 Linux and at least3GiB free RAM are required.
+The .NET runtime is bundled. Current x86_64/AVX2 Linux and at least 3 GiB free RAM are required.
 
 ## Linux desktop
 
@@ -32,7 +32,7 @@ Settings contain only a public wallet or mining ID, machine name, region, ZEC an
 No website password, login token, payment key or seed is downloaded. Registered saved
 mining IDs are read only for their signed-in owner. Public wallet mining needs no account.
 All region names currently use one server in Europe. MICRO shares eligible PPLNS work;
-accepted shares are not guaranteed earnings. Pool fee0.6%; MICRO minimum0.001ZEC.
+accepted shares are not guaranteed earnings. Pool fee 0.6%; MICRO minimum 0.001 ZEC.
 **View my stats & earnings** opens your public worker group or signed-in account dashboard.
 
 ## Advanced users
