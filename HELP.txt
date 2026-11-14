@@ -31,6 +31,12 @@ To change wallet or machine name: ./Start-Server --setup
 Automatic startup uses your Linux user service. Startup before login
 requires administrator-enabled user lingering; setup checks and reports it.
 
+YOUR STATS AND EARNINGS
+Click View my stats & earnings in the app. Wallet miners see their public
+worker group; registered miners sign in to view their account. The Linux
+server wizard prints your dashboard link. Work and actual earnings are
+separate: accepted shares do not guarantee an immediately payable balance.
+
 WHAT TO EXPECT
 ZEC MICRO is selected automatically. No pool address needs typing.
 Choose EU, USA or ASIA; the matching URL is selected automatically.

@@ -3,6 +3,7 @@
 from pathlib import Path
 import argparse,os,json,sys,subprocess,signal,fcntl,stat,time
 import point6miner_ui as miner
+from miner_links import portal_url
 from performance_policy import recommend_threads,linux_battery
 ROOT=Path(__file__).resolve().parent
 CONFIG=Path.home()/'.config/pointsixpool-miner/config.json'
@@ -56,6 +57,7 @@ def setup():
  cpus=len(os.sched_getaffinity(0));mem=next(int(l.split()[1])for l in Path('/proc/meminfo').read_text().splitlines()if l.startswith('MemAvailable:'));auto=min(miner.recommended_measured() or 4,recommend_threads(cpus,mem,linux_battery()));choice=input(f'CPU threads [Auto: {auto}; maximum {min(4,cpus)}]: ').strip();threads=int(choice)if choice else auto
  region=input('Region [EU / USA / ASIA; Enter for EU]: ').strip().upper()or'EU'
  v={'kind':kind,'identity':identity,'worker':worker,'threads':threads,'hours':24,'region':region};miner.options(v)
+ print('View your stats and earnings: '+portal_url(kind,identity))
  startup=input('Start automatically for this user after login/reboot support check? [y/N]: ').strip().lower()=='y';save_config(v)
  if startup:install_startup();return 0
  print('Starting MICRO mining. Ctrl+C stops this worker.');return run()

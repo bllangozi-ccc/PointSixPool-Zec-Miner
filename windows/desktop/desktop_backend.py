@@ -1,3 +1,4 @@
+from miner_links import portal_url
 from miner_efficiency import hardware, monitor
 #!/usr/bin/env python3
 """PointSixPool Zec Miner Windows candidate. Loopback UI; never mines until Start."""
@@ -114,4 +115,4 @@ def start(value):
  with LOCK:
   if RUNNER is not None and RUNNER.is_alive():raise ValueError('Already running. Stop before changing setup.')
   if TELEMETRY is not None and TELEMETRY.is_alive():raise ValueError('Previous telemetry is stopping. Try again in a moment.')
-  STOP.clear();STATE.update(running=True,state='Starting…',accepted=0,rejected=0,uncertain=0,sessions=0,accepted_work=0.,work_measurement_unavailable=False);LOG.clear();TELEMETRY=threading.Thread(target=monitor,args=(sys.modules[__name__],v['threads']),daemon=True);TELEMETRY.start();RUNNER=threading.Thread(target=run,args=(v,),daemon=True);RUNNER.start()
+  STOP.clear();STATE.update(running=True,state='Starting…',accepted=0,rejected=0,uncertain=0,sessions=0,accepted_work=0.,work_measurement_unavailable=False,dashboard_url=portal_url(v['kind'],v['identity']));LOG.clear();TELEMETRY=threading.Thread(target=monitor,args=(sys.modules[__name__],v['threads']),daemon=True);TELEMETRY.start();RUNNER=threading.Thread(target=run,args=(v,),daemon=True);RUNNER.start()
