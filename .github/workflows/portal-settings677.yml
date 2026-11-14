@@ -1,6 +1,8 @@
 name: Published Windows miner with portal-issued settings
 on:
   workflow_dispatch:
+  push:
+    branches: [portal-settings677-validation]
 permissions:
   contents: read
 jobs:
