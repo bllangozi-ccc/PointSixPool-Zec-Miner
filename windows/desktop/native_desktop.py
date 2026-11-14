@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import ttk,messagebox
 from miner_efficiency import recommended_measured
 from miner_links import portal_url
+from setup_config import load as load_setup
 from performance_policy import recommend_threads,windows_battery
 
 class MinerWindow:
@@ -29,7 +30,14 @@ class MinerWindow:
   ttk.Label(dash,text='Opening this app never starts mining. Rewards require eligible work and mature pool blocks.',style='Muted.TLabel',wraplength=800).pack(anchor='w');self.messages=tk.Text(dash,height=3,font=('Consolas',9),state='disabled',bg='#f9fbfa',fg='#29483b',relief='flat');self.messages.pack(fill='both',expand=True,pady=(10,0))
   ttk.Label(devices,text='CPU mining',style='Heading.TLabel').pack(anchor='w');ttk.Label(devices,text=f'Available CPU threads in this build: {min(4,len(backend.available_cpus()))}\nAVX2 CPU and at least 3 GiB free RAM required before starting.\nGPU mining is not supported by this build.\nThermal protection requires a supported CPU sensor; unavailable sensors provide no thermal control.',wraplength=780).pack(anchor='w',pady=20);self.telemetry=tk.StringVar(value='Hardware telemetry: reading…');ttk.Label(devices,textvariable=self.telemetry,wraplength=780).pack(anchor='w',pady=10);ttk.Label(devices,text='Run time · hours').pack(anchor='w');self.duration=ttk.Spinbox(devices,from_=1,to=24,textvariable=self.hours,width=10);self.duration.pack(anchor='w',pady=8);ttk.Button(devices,text='Optional Windows sensor setup ↗',command=lambda:webbrowser.open('https://github.com/LibreHardwareMonitor/LibreHardwareMonitor')).pack(anchor='w',pady=8)
   ttk.Label(help_page,text='Start in three steps',style='Heading.TLabel').pack(anchor='w');ttk.Label(help_page,text='1. Add your public ZEC receiving wallet or registered pool ID.\n2. Name this worker and choose its performance.\n3. Press Start Mining. Press Stop to finish.\n\nZEC MICRO preset: zec4.pointsixpool.com:3034\nPool fee: 0.6% · Minimum payout: 0.001 ZEC\nRewards depend on actual blocks, maturity and eligible work.\nCPU electricity can cost more than earnings.\n\nNever enter private keys, wallet seeds or payment passphrases.',wraplength=780).pack(anchor='w',pady=20);ttk.Button(help_page,text='Open pool help ↗',command=lambda:webbrowser.open('https://pointsixpool.com/getting-started')).pack(anchor='w')
-  footer=ttk.Frame(root,padding=(20,8));footer.pack(fill='x');ttk.Button(footer,text='View my stats & earnings ↗',command=lambda:webbrowser.open(portal_url('wallet'if self.kind.get()=='Wallet address'else'registered',self.identity.get().strip()))).pack(side='left',padx=(0,8));ttk.Button(footer,text='pointsixpool.com ↗',command=lambda:webbrowser.open('https://pointsixpool.com')).pack(side='left');ttk.Label(footer,text='No automatic mining or background startup service.',style='Muted.TLabel').pack(side='right');self.root.after(300,self.refresh)
+  footer=ttk.Frame(root,padding=(20,8));footer.pack(fill='x');ttk.Button(footer,text='View my stats & earnings ↗',command=lambda:webbrowser.open(portal_url('wallet'if self.kind.get()=='Wallet address'else'registered',self.identity.get().strip()))).pack(side='left',padx=(0,8));ttk.Button(footer,text='pointsixpool.com ↗',command=lambda:webbrowser.open('https://pointsixpool.com')).pack(side='left');ttk.Label(footer,text='No automatic mining or background startup service.',style='Muted.TLabel').pack(side='right');self.apply_download_setup();self.root.after(300,self.refresh)
+ def apply_download_setup(self):
+  folder=Path(sys.executable).parent if getattr(sys,'frozen',False) else Path(__file__).resolve().parents[2]
+  try:
+   config=load_setup(folder/'point6miner-settings.json')
+   if config:
+    self.kind.set('Wallet address' if config['kind']=='wallet'else'Registered pool ID');self.identity.set(config['identity']);self.worker.set(config['worker']);self.region.set(config['region']);self.select_region();self.status.set('Your downloaded settings are ready. Check them, then press Start Mining.')
+  except (OSError,ValueError) as e:self.status.set(str(e)+' Enter your settings below.')
  def select_region(self):
   region=self.region.get();host='zec4.pointsixpool.com' if region=='EU' else region.lower()+'.zec4.pointsixpool.com';self.region_note.set((region+' · ')+host+':3034 · Currently served in EU')
  def performance(self,value):
@@ -75,7 +83,9 @@ def main():
   b.GUARD=b.ParentExitGuard();window=MinerWindow(root,b)
   if '--smoke-test'in sys.argv:
    def smoke():
-    assert not b.STATE['running']and b.CHILD is None;assert window.power.cget('text')=='▶  Start Mining';assert window.thread_label.get().startswith('Auto');out=Path(os.environ.get('POINTSIX_SMOKE_RESULT','DESKTOP-SMOKE.PUBLIC.json'));out.write_text(json.dumps({'passed':True,'native_gui_opened':True,'mining_started':False,'python_commands_required':False,'bundled_executable':bool(getattr(sys,'frozen',False))}));window.close()
+    assert not b.STATE['running']and b.CHILD is None;
+    if os.environ.get('POINTSIX_SMOKE_EXPECT_SETUP')=='1':assert window.worker.get()=='Desktop-CI'and window.region.get()=='ASIA'and window.identity.get()=='t1VL5XNfTPehmSxrszsSJC1hJUrYGUHbAFg'
+    assert window.power.cget('text')=='▶  Start Mining';assert window.thread_label.get().startswith('Auto');out=Path(os.environ.get('POINTSIX_SMOKE_RESULT','DESKTOP-SMOKE.PUBLIC.json'));out.write_text(json.dumps({'passed':True,'native_gui_opened':True,'mining_started':False,'python_commands_required':False,'bundled_executable':bool(getattr(sys,'frozen',False))}));window.close()
    root.after(1000,smoke)
   root.mainloop()
  except Exception as e:root.withdraw();messagebox.showerror('PointSixPool Zec Miner',str(e)[:250],parent=root);root.destroy()

@@ -20,9 +20,15 @@ if ($LASTEXITCODE -ne 0) { throw 'Desktop packager installation failed' }
 if ($LASTEXITCODE -ne 0) { throw 'Desktop executable build failed' }
 $exe = Join-Path $PSScriptRoot 'desktop-dist/PointSixPool Miner.exe'
 $env:POINTSIX_SMOKE_RESULT = Join-Path $PSScriptRoot 'DESKTOP-SMOKE.PUBLIC.json'
+$setupPath = Join-Path (Split-Path -Parent $exe) 'point6miner-settings.json'
+@{schema=1;coin='ZEC';mode='MICRO';kind='wallet';identity='t1VL5XNfTPehmSxrszsSJC1hJUrYGUHbAFg';worker='Desktop-CI';region='ASIA'} | ConvertTo-Json | Set-Content -Encoding utf8NoBOM $setupPath
+$env:POINTSIX_SMOKE_EXPECT_SETUP = '1'
 $process = Start-Process -FilePath $exe -ArgumentList '--smoke-test' -PassThru
 if (-not $process.WaitForExit(30000)) { Stop-Process -Id $process.Id -Force; throw 'Desktop non-mining GUI smoke test timed out' }
 if ($process.ExitCode -ne 0 -or -not (Test-Path $env:POINTSIX_SMOKE_RESULT)) { throw 'Desktop GUI smoke test failed' }
 $result = Get-Content $env:POINTSIX_SMOKE_RESULT -Raw | ConvertFrom-Json
 if (-not $result.passed -or $result.mining_started -or -not $result.bundled_executable) { throw 'Desktop smoke evidence invalid' }
 (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant() | Set-Content (Join-Path $PSScriptRoot 'DESKTOP-SHA256.txt')
+
+Remove-Item $setupPath
+Remove-Item Env:POINTSIX_SMOKE_EXPECT_SETUP

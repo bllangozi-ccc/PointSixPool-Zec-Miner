@@ -6,12 +6,16 @@ import point6miner_ui as miner
 from miner_links import portal_url
 from performance_policy import recommend_threads,linux_battery
 ROOT=Path(__file__).resolve().parent
-CONFIG=Path.home()/'.config/pointsixpool-miner/config.json'
+CONFIG=Path(os.environ.get('POINTSIX_MINER_CONFIG',str(Path.home()/'.config/pointsixpool-miner/config.json')))
 UNIT='pointsixpool-micro.service'
 def load_config():
  st=CONFIG.lstat()
- if not stat.S_ISREG(st.st_mode)or st.st_uid!=os.getuid()or st.st_mode&0o077 or st.st_size>4096:raise ValueError('Saved miner setup has unsafe permissions.')
- v=json.loads(CONFIG.read_text());miner.options(v);return v
+ trusted_system=CONFIG==Path('/etc/pointsixpool-miner/config.json')and st.st_uid==0 and stat.S_IMODE(st.st_mode)==0o640 and st.st_gid in [os.getgid(),*os.getgroups()]
+ if not stat.S_ISREG(st.st_mode)or not trusted_system and (st.st_uid!=os.getuid()or st.st_mode&0o077)or st.st_size>4096:raise ValueError('Saved miner setup has unsafe permissions.')
+ v=json.loads(CONFIG.read_text())
+ if v.get('threads')=='auto':
+  mem=next(int(l.split()[1])for l in Path('/proc/meminfo').read_text().splitlines()if l.startswith('MemAvailable:'));v['threads']=min(miner.recommended_measured()or 4,recommend_threads(len(os.sched_getaffinity(0)),mem,linux_battery()))
+ miner.options(v);return v
 
 def save_config(v):
  miner.options(v);CONFIG.parent.mkdir(mode=0o700,parents=True,exist_ok=True)
@@ -36,7 +40,7 @@ def install_startup():
  print('To stop: ./Start-Server --stop   To disable automatic start: ./Start-Server --disable-autostart')
 
 def run():
- miner.verify();v=load_config();lockpath=CONFIG.with_name('running.lock');fd=os.open(lockpath,os.O_RDWR|os.O_CREAT|os.O_NOFOLLOW,0o600)
+ miner.verify();v=load_config();lockpath=(Path.home()/'pointsix-miner-running.lock')if CONFIG==Path('/etc/pointsixpool-miner/config.json')else CONFIG.with_name('running.lock');fd=os.open(lockpath,os.O_RDWR|os.O_CREAT|os.O_NOFOLLOW,0o600)
  with os.fdopen(fd,'a')as lock:
   try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
   except BlockingIOError:raise ValueError('This saved worker is already running.')

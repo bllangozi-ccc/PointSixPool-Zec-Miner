@@ -1,3 +1,5 @@
+CONFIGURED DOWNLOAD: keep point6miner-settings.json beside the app. Your public details fill in automatically; press Start Mining after checking them.
+
 POINTSIXPOOL MINER — QUICK START
 
 WINDOWS PC
@@ -62,3 +64,5 @@ keeps its conservative default. No benchmark starts mining automatically.
 Only enter your PUBLIC receiving wallet address. Never enter a seed,
 private key, wallet passphrase or payment password.
 Help and current pool rules: https://pointsixpool.com/point6miner
+
+SIMPLE SERVER INSTALL (upcoming release): choose Linux server on the miner page, copy the generated root installation command, then run /start-mining. Stop with /stop-mining. The installer never starts mining; the service runs as pointsix-miner, not root.

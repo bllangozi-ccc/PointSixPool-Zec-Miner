@@ -1,3 +1,5 @@
+> Development update: [simple configured desktop downloads and two-step Linux installation](docs/SIMPLE-SETUP.md) are being qualified on `windows-beta`. Existing released downloads remain unchanged until approval.
+
 # PointSixPool Zec Miner
 
 **Official pool: [pointsixpool.com](https://pointsixpool.com)** · [ZEC pool](https://pointsixpool.com/pools/zec) · [Start mining](https://pointsixpool.com/start-mining?coin=zec)
