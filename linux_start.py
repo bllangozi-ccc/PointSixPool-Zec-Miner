@@ -54,7 +54,8 @@ def setup():
  kind='registered'if input('Use registered pool ID instead of wallet? [y/N]: ').strip().lower()=='y'else'wallet'
  identity=input('Wallet address: 'if kind=='wallet'else'Registered pool ID: ').strip();worker=input('Worker name [Point6Miner-Linux]: ').strip()or'Point6Miner-Linux'
  cpus=len(os.sched_getaffinity(0));mem=next(int(l.split()[1])for l in Path('/proc/meminfo').read_text().splitlines()if l.startswith('MemAvailable:'));auto=min(miner.recommended_measured() or 4,recommend_threads(cpus,mem,linux_battery()));choice=input(f'CPU threads [Auto: {auto}; maximum {min(4,cpus)}]: ').strip();threads=int(choice)if choice else auto
- v={'kind':kind,'identity':identity,'worker':worker,'threads':threads,'hours':24};miner.options(v)
+ region=input('Region [EU / USA / ASIA; Enter for EU]: ').strip().upper()or'EU'
+ v={'kind':kind,'identity':identity,'worker':worker,'threads':threads,'hours':24,'region':region};miner.options(v)
  startup=input('Start automatically for this user after login/reboot support check? [y/N]: ').strip().lower()=='y';save_config(v)
  if startup:install_startup();return 0
  print('Starting MICRO mining. Ctrl+C stops this worker.');return run()

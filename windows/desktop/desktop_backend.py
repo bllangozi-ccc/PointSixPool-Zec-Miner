@@ -9,6 +9,7 @@ ROOT=Path(sys._MEIPASS)/'miner' if getattr(sys,'frozen',False) else Path(__file_
 GUARD=None
 EXPECTED=json.loads((ROOT/'WINDOWS-PINS.json').read_text())
 POOL='stratum+tcp://zec4.pointsixpool.com:3034'
+REGION_POOLS={'EU':POOL,'USA':'stratum+tcp://usa.zec4.pointsixpool.com:3034','ASIA':'stratum+tcp://asia.zec4.pointsixpool.com:3034'}
 TOKEN=secrets.token_urlsafe(32)
 LOCK=threading.RLock();STOP=threading.Event();CHILD=None;RUNNER=None;TELEMETRY=None
 STATE={'running':False,'state':'Ready. Mining is off.','accepted':0,'rejected':0,'uncertain':0,'sessions':0,'accepted_work':0.,'hardware':hardware()}
@@ -26,7 +27,8 @@ def verify():
  if 'backend/Point6Miner.Cli.exe'not in EXPECTED:raise ValueError('Bundled mining engine is missing.')
 
 def options(value):
- if not isinstance(value,dict)or set(value)!={'identity','kind','worker','threads','hours'}:raise ValueError('Complete the miner setup fields.')
+ if not isinstance(value,dict)or set(value) not in ({'identity','kind','worker','threads','hours'},{'identity','kind','worker','threads','hours','region'}):raise ValueError('Complete the miner setup fields.')
+ if value.get('region','EU')not in REGION_POOLS:raise ValueError('Choose EU, USA or ASIA.')
  kind=value['kind'];identity=value['identity'];worker=value['worker']
  if kind not in('wallet','registered')or not isinstance(identity,str)or not isinstance(worker,str):raise ValueError('Choose a wallet or registered ID.')
  if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,31}',worker):raise ValueError('Use 1–32 letters, numbers, underscores or hyphens for the worker.')
@@ -47,7 +49,7 @@ def options(value):
  return {**value,'cpus':available[:threads]}
 
 def command(v,seconds):
- return [str(ROOT/'backend/Point6Miner.Cli.exe'),'--mine','--pool',POOL,'--address',v['identity'],'--identity-kind',v['kind'],'--worker',v['worker'],'--solver',str(ROOT/'point6miner-equihash.exe'),'--solver-sha256',EXPECTED['point6miner-equihash.exe'],'--solver-threads',str(v['threads']),'--difficulty','0.0001220703125','--max-seconds',str(max(1,min(3600,int(seconds)))),'--max-shares','100','--reconnects','0','--solver-seconds','120','--cpu-seconds','110','--solver-memory-mib','2048']
+ return [str(ROOT/'backend/Point6Miner.Cli.exe'),'--mine','--pool',REGION_POOLS[v.get('region','EU')],'--address',v['identity'],'--identity-kind',v['kind'],'--worker',v['worker'],'--solver',str(ROOT/'point6miner-equihash.exe'),'--solver-sha256',EXPECTED['point6miner-equihash.exe'],'--solver-threads',str(v['threads']),'--difficulty','0.0001220703125','--max-seconds',str(max(1,min(3600,int(seconds)))),'--max-shares','100','--reconnects','0','--solver-seconds','120','--cpu-seconds','110','--solver-memory-mib','2048']
 
 def terminate(p):
  if p is None or p.poll()is not None:return

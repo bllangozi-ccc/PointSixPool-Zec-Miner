@@ -47,3 +47,10 @@ Missing readings, counter discontinuities, or long sampling gaps keep results un
 Measured Auto presets need at least 30 minutes and 20 accepted shares with complete energy
 coverage. Results remain local, contain no wallet details, and are never fabricated.
 Until qualified measurements exist, Auto keeps the conservative initial recommendation.
+
+## Region selection
+
+Choose EU, USA or ASIA. The miner selects the matching MICRO endpoint automatically:
+`zec4.pointsixpool.com:3034`, `usa.zec4.pointsixpool.com:3034`, or
+`asia.zec4.pointsixpool.com:3034`. All three currently use the same EU server.
+The miner remains MICRO-only; the website separately explains PPLNS and SOLO.

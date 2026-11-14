@@ -33,6 +33,9 @@ requires administrator-enabled user lingering; setup checks and reports it.
 
 WHAT TO EXPECT
 ZEC MICRO is selected automatically. No pool address needs typing.
+Choose EU, USA or ASIA; the matching URL is selected automatically.
+All three choices currently connect to the same server in Europe.
+PPLNS and SOLO are separate pool modes; this app stays MICRO-only.
 This version uses your CPU, not your graphics cards. It requires an
 AVX2-capable 64-bit CPU and at least 3 GiB free memory.
 Accepted shares mean work was accepted, not money already earned.
