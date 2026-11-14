@@ -9,7 +9,7 @@ from performance_policy import recommend_threads,windows_battery
 class MinerWindow:
  def __init__(self,root,backend):
   self.root=root;self.b=backend;self.busy=False;self.closing=False;self.running=False;self.setting_auto=False;self.auto_mode=True
-  root.title('PointSixPool Zec Miner');root.geometry('920x700');root.minsize(720,600);root.configure(bg='#f3f5f4');root.protocol('WM_DELETE_WINDOW',self.close)
+  root.title('PointSixPool Miner');icon_root=Path(sys._MEIPASS) if getattr(sys,'frozen',False) else Path(__file__).resolve().parents[2];self.icon=tk.PhotoImage(file=str(icon_root/'assets/pointsixpool.png'));root.iconphoto(True,self.icon);root.geometry('920x700');root.minsize(720,600);root.configure(bg='#f3f5f4');root.protocol('WM_DELETE_WINDOW',self.close)
   style=ttk.Style(root);style.theme_use('clam');style.configure('.',font=('Segoe UI',11),background='#f3f5f4',foreground='#183831');style.configure('TNotebook.Tab',padding=(18,10));style.configure('TEntry',padding=8);style.configure('Primary.TButton',font=('Segoe UI',18,'bold'),padding=(22,15),foreground='#146b48');style.configure('Heading.TLabel',font=('Segoe UI',20,'bold'));style.configure('Metric.TLabel',font=('Segoe UI',23,'bold'));style.configure('Muted.TLabel',foreground='#536b63')
   header=ttk.Frame(root,padding=(24,16));header.pack(fill='x');ttk.Label(header,text='PointSixPool',style='Heading.TLabel').pack(side='left');ttk.Label(header,text='Zec Miner  ·  MICRO  ·  0.6% fee',style='Muted.TLabel').pack(side='right')
   tabs=ttk.Notebook(root);tabs.pack(fill='both',expand=True,padx=20,pady=(0,10));dash=ttk.Frame(tabs,padding=20);devices=ttk.Frame(tabs,padding=24);help_page=ttk.Frame(tabs,padding=24)

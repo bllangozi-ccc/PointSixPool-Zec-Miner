@@ -16,9 +16,9 @@ Get-ChildItem $payload -Recurse -File | Sort-Object FullName | ForEach-Object {
 $pins | ConvertTo-Json | Set-Content -Encoding utf8NoBOM (Join-Path $payload 'WINDOWS-PINS.json')
 & python -m pip install --disable-pip-version-check pyinstaller==6.22.3
 if ($LASTEXITCODE -ne 0) { throw 'Desktop packager installation failed' }
-& python -m PyInstaller --noconfirm --clean --onefile --windowed --noupx --name PointSixPool-Zec-Miner --distpath (Join-Path $PSScriptRoot 'desktop-dist') --workpath (Join-Path $PSScriptRoot 'desktop-work') --specpath (Join-Path $PSScriptRoot 'desktop-work') --paths $source --add-data ($payload + ':miner') (Join-Path $source 'native_desktop.py')
+& python -m PyInstaller --noconfirm --clean --onefile --windowed --noupx --name 'PointSixPool Miner' --icon (Join-Path $root 'assets/pointsixpool.ico') --add-data ((Join-Path $root 'assets') + ':assets') --distpath (Join-Path $PSScriptRoot 'desktop-dist') --workpath (Join-Path $PSScriptRoot 'desktop-work') --specpath (Join-Path $PSScriptRoot 'desktop-work') --paths $source --add-data ($payload + ':miner') (Join-Path $source 'native_desktop.py')
 if ($LASTEXITCODE -ne 0) { throw 'Desktop executable build failed' }
-$exe = Join-Path $PSScriptRoot 'desktop-dist/PointSixPool-Zec-Miner.exe'
+$exe = Join-Path $PSScriptRoot 'desktop-dist/PointSixPool Miner.exe'
 $env:POINTSIX_SMOKE_RESULT = Join-Path $PSScriptRoot 'DESKTOP-SMOKE.PUBLIC.json'
 $process = Start-Process -FilePath $exe -ArgumentList '--smoke-test' -PassThru
 if (-not $process.WaitForExit(30000)) { Stop-Process -Id $process.Id -Force; throw 'Desktop non-mining GUI smoke test timed out' }

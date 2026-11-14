@@ -4,7 +4,7 @@ This is development-source guidance. Existing published beta downloads remain un
 
 ## Windows desktop
 
-The new self-contained executable is named `PointSixPool-Zec-Miner.exe`. Open it directly: no terminal commands, separate Python install or .NET runtime install. Enter your public **Wallet Address** or registered pool ID, **Worker Name**, choose **ZEC**, then press **Start Mining**. Opening the app does not start mining.
+The new self-contained executable is named `PointSixPool Miner.exe`. Open it directly: no terminal commands, separate Python install or .NET runtime install. Enter your public **Wallet Address** or registered pool ID, **Worker Name**, choose **ZEC**, then press **Start Mining**. Opening the app does not start mining.
 
 Performance starts in **Auto**: conservative CPU allocation based on available cores, free RAM and battery power. Drag the bar to override, or press Auto again. Stop mining before changing performance. This controls CPU threads, not temperature. The app uses CPU mining; GPU and Android/iOS support are not included.
 

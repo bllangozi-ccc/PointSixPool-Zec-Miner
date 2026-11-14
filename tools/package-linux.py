@@ -4,7 +4,7 @@ r=Path(__file__).resolve().parents[1];out=r/'linux-candidate';out.mkdir(exist_ok
 for n in ['point6miner_ui.py','performance_policy.py','miner_efficiency.py','linux_start.py','Start-Server','START-HERE.md','NOTICE.md','SECURITY.md']:
  shutil.copy2(r/n,out/n)
 (out/'Start-Server').chmod(0o755)
-for n in ['licenses','source']:
+for n in ['licenses','source','assets']:
  shutil.copytree(r/n,out/n,dirs_exist_ok=True,ignore=shutil.ignore_patterns('bin','obj'))
 # CI publishes managed files into linux-candidate before this script.
 names=['Point6Miner.Cli.dll','Point6Miner.Core.dll','Point6Miner.Cli.runtimeconfig.json','Point6Miner.Cli.deps.json','point6miner-equihash']
