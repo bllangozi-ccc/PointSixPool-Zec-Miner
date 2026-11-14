@@ -1,7 +1,7 @@
 from pathlib import Path
 import shutil,hashlib,re,json,tarfile
 r=Path(__file__).resolve().parents[1];out=r/'linux-candidate';out.mkdir(exist_ok=True)
-for n in ['point6miner_ui.py','performance_policy.py','miner_efficiency.py','miner_links.py','linux_start.py','Start-Server','START-HERE.md','NOTICE.md','SECURITY.md','Start-Desktop','HELP.txt']:
+for n in ['point6miner_ui.py','performance_policy.py','miner_efficiency.py','miner_links.py','windows_sensors.py','linux_start.py','Start-Server','START-HERE.md','NOTICE.md','SECURITY.md','Start-Desktop','HELP.txt']:
  shutil.copy2(r/n,out/n)
 (out/'Start-Server').chmod(0o755);(out/'Start-Desktop').chmod(0o755)
 for n in ['licenses','source','assets']:

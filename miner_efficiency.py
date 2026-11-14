@@ -48,7 +48,9 @@ def linux_sample(root=Path('/sys')):
 
 
 def sample():
-    return linux_sample() if platform.system() == 'Linux' else {'temperature_c': None, 'energy_domains': {}, 'power_scope': None}
+    if platform.system() == 'Linux': return linux_sample()
+    from windows_sensors import read
+    return read()
 
 
 class Measurement:
@@ -61,7 +63,7 @@ class Measurement:
         elif not math.isfinite(work_units) or work_units < self.work_units: raise ValueError('Invalid work total')
         else: self.work_units = work_units
         if self.previous:
-            before, old = self.previous; dt = now-before
+            before, old_reading = self.previous; old = old_reading['energy_domains']; dt = now-before
             if dt <= 0: raise ValueError('Benchmark clock must increase')
             self.elapsed += dt; domains = reading['energy_domains']; valid = bool(domains) and domains.keys() == old.keys()
             energy = 0
@@ -72,9 +74,13 @@ class Measurement:
                     energy += (v-previous) % maximum / 1e6
                 # Long gaps can hide multiple counter wraps. Exclude rather than guess.
                 valid = valid and dt <= 10 and 0 < energy/dt < 10000
+            if not domains and reading.get('watts') is not None and old_reading.get('watts') is not None:
+                watts=reading['watts'];previous_watts=old_reading['watts']
+                valid=0<dt<=10 and all(type(w)in(int,float) and math.isfinite(w) and 0<w<10000 for w in [watts,previous_watts])
+                if valid: energy=(watts+previous_watts)*.5*dt
             if valid: self.joules += energy; self.covered_seconds += dt
             else: self.complete = False
-        self.previous = (now, reading['energy_domains'].copy()); self.accepted = accepted
+        self.previous = (now, {**reading, 'energy_domains':reading['energy_domains'].copy()}); self.accepted = accepted
         valid = self.complete and self.covered_seconds >= 60 and self.joules > 0
         return {'elapsed_seconds': self.elapsed, 'accepted_shares': accepted,
                 'average_watts': self.joules/self.covered_seconds if valid else None,
@@ -140,7 +146,12 @@ def monitor(backend, threads):
             return
         if child is not None and child.poll() is None and action == 'reduce':
             try:
-                constrain_linux_tree(child.pid, [min(os.sched_getaffinity(0))]); reduced = True
+                if os.name=='nt':
+                    from windows_sensors import constrain_tree
+                    from windows_resources import available_cpus
+                    constrain_tree(child.pid,[min(available_cpus())])
+                else: constrain_linux_tree(child.pid, [min(os.sched_getaffinity(0))])
+                reduced = True
             except OSError:
                 backend.stop()
                 with backend.LOCK: backend.STATE['state'] = 'Thermal protection stopped mining because speed reduction was unavailable.'

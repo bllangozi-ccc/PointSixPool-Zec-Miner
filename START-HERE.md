@@ -30,11 +30,9 @@ Official pool: https://pointsixpool.com · MICRO: zec4.pointsixpool.com:3034 · 
 
 Devices shows detected CPU availability. This release still mines with the CPU only.
 Linux reads supported CPU hwmon temperatures and readable Intel RAPL package-energy
-counters. No root privileges or sensor driver installation is requested. Windows CPU
-temperature and power are currently unavailable; the app cannot provide thermal protection
-without a supported sensor. Firmware cooling and thermal limits must remain enabled.
+counters. No root privileges or sensor driver installation is requested. Windows reads supported CPU sensors through an already-running LibreHardwareMonitor WMI provider. It does not install or elevate a driver. The app cannot provide thermal protection without a supported sensor. Firmware cooling and thermal limits must remain enabled.
 
-At 75°C, a supported Linux CPU sensor triggers a one-CPU affinity limit for the miner
+At 75°C, a supported CPU sensor triggers a one-CPU affinity limit for the miner
 and its descendants. At 85°C, mining stops. Lost sensors after throttling also stop mining.
 Cooling never automatically increases speed or restarts a stopped session. Press Stop,
 let the host cool, then Start manually. These are conservative software thresholds,
@@ -54,3 +52,5 @@ Choose EU, USA or ASIA. The miner selects the matching MICRO endpoint automatica
 `zec4.pointsixpool.com:3034`, `usa.zec4.pointsixpool.com:3034`, or
 `asia.zec4.pointsixpool.com:3034`. All three currently use the same EU server.
 The miner remains MICRO-only; the website separately explains PPLNS and SOLO.
+
+Windows optional sensors: use the official [LibreHardwareMonitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor) application. Some sensors require that separate application to run with administrator permission; our miner stays unelevated. Sampled CPU-package watts are integrated over time and exclude the rest of the machine. Sensor support and readings must be checked on the actual PC.

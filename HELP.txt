@@ -51,8 +51,10 @@ more than earnings. Pool fee: 0.6%. MICRO minimum payout: 0.001 ZEC.
 AUTO, TEMPERATURE AND POWER
 Auto begins conservatively. Stop before changing the speed slider.
 Supported Linux CPU sensors enable speed reduction at 75 C and stopping
-at 85 C. Missing sensors show unavailable. Windows temperature/power
-monitoring is not yet supported. Keep your computer's normal cooling enabled.
+at 85 C. Missing sensors show unavailable. On Windows, supported readings
+can come from LibreHardwareMonitor while it is running; it is optional and
+not installed by this app. Keep your computer's normal cooling enabled.
+Official sensor provider: https://github.com/LibreHardwareMonitor/LibreHardwareMonitor
 CPU-package power excludes the rest of your computer. Measured presets
 need sufficient real accepted work and valid energy samples; otherwise Auto
 keeps its conservative default. No benchmark starts mining automatically.
