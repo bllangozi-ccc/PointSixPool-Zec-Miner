@@ -1,4 +1,4 @@
-> Development update: [simple configured desktop downloads and two-step Linux installation](docs/SIMPLE-SETUP.md) are being qualified on `windows-beta`. Existing released downloads remain unchanged until approval.
+> Development update: [simple configured desktop downloads and two-step Linux installation](docs/SIMPLE-SETUP.md) are being qualified on `windows-beta`. [Setup FAQ](docs/FAQ.md). Windows and Linux candidate build checks passed; website delivery and public download replacement await exact release approval. Existing released downloads remain unchanged until approval.
 
 # PointSixPool Zec Miner
 
