@@ -78,9 +78,10 @@ jobs:
       - name: Build Linux CPU candidate without mining
         run: |
           mkdir -p linux-candidate/backend
-          dotnet publish source/Point6Miner.Cli/Point6Miner.Cli.csproj -c Release -r linux-x64 --self-contained true -p:UseAppHost=true -p:IncludeSourceRevisionInInformationalVersion=false -o linux-candidate/backend
+          dotnet publish source/Point6Miner.Cli/Point6Miner.Cli.csproj -c Release -r linux-x64 --self-contained true -p:UseAppHost=true -p:InvariantGlobalization=true -p:IncludeSourceRevisionInInformationalVersion=false -o linux-candidate/backend
           g++ -std=c++17 -O3 -pthread -DATOMIC -march=x86-64 -mtune=generic -fno-strict-aliasing -fstack-protector-strong -D_FORTIFY_SOURCE=2 source/native-provenance/solver-fast.cpp source/native-provenance/reviewed/blake/blake2b.cpp -o linux-candidate/point6miner-equihash
           python3 -B tools/package-linux.py
+          python3 -c 'import json; assert json.load(open("linux-candidate/backend/Point6Miner.Cli.runtimeconfig.json"))["runtimeOptions"]["configProperties"]["System.Globalization.Invariant"] is True'
           linux-candidate/backend/Point6Miner.Cli --help
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
