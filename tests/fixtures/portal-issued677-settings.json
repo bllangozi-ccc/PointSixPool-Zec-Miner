@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "coin": "ZEC",
+  "mode": "MICRO",
+  "kind": "wallet",
+  "identity": "t1VL5XNfTPehmSxrszsSJC1hJUrYGUHbAFg",
+  "worker": "Desktop-CI",
+  "region": "ASIA"
+}
