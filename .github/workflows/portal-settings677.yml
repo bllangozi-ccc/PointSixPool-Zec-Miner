@@ -1,0 +1,37 @@
+name: Published Windows miner with portal-issued settings
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  portal-settings:
+    runs-on: windows-2025
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Verify published archive and open actual native desktop without mining
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Invoke-WebRequest -Uri 'https://github.com/bllangozi-ccc/PointSixPool-Zec-Miner/releases/download/v0.6.0-beta3/PointSixPool-Miner-Windows.zip' -OutFile published.zip
+          $actual = (Get-FileHash published.zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actual -ne '3185a08fd8e8752b8f757b1e78700d942479f9cf1f002e469ccf54a9c8dfd6ca') { throw 'Published artifact digest mismatch' }
+          Expand-Archive published.zip bundle
+          Copy-Item tests/fixtures/portal-issued677-settings.json bundle/point6miner-settings.json -Force
+          $env:POINTSIX_SMOKE_EXPECT_SETUP = '1'
+          $env:POINTSIX_SMOKE_RESULT = Join-Path $PWD 'PORTAL-WINDOWS-GUI677.PUBLIC.json'
+          $exe = Join-Path $PWD 'bundle/PointSixPool Miner.exe'
+          $process = Start-Process -FilePath $exe -ArgumentList '--smoke-test' -WorkingDirectory (Join-Path $PWD 'bundle') -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw 'Desktop smoke process failed' }
+          if (!(Test-Path $env:POINTSIX_SMOKE_RESULT)) { throw 'Desktop did not save successful smoke result' }
+          $proof = Get-Content $env:POINTSIX_SMOKE_RESULT -Raw | ConvertFrom-Json
+          if (!$proof.passed -or !$proof.native_gui_opened -or $proof.mining_started -or !$proof.bundled_executable) { throw 'Native desktop qualification failed' }
+          @{ passed = $true; published_archive_sha256 = $actual; exe_sha256 = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant(); actual_portal_settings_sha256 = (Get-FileHash bundle/point6miner-settings.json -Algorithm SHA256).Hash.ToLowerInvariant(); native_windows_gui_used = $true; mining_started = $false; source = 'Actual portal candidate generated download settings and published beta3 executable'; } | ConvertTo-Json | Set-Content PORTAL-WINDOWS-PROVENANCE677.PUBLIC.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: portal-issued-windows-settings677-proof
+          path: |
+            PORTAL-WINDOWS-GUI677.PUBLIC.json
+            PORTAL-WINDOWS-PROVENANCE677.PUBLIC.json
+          if-no-files-found: error
