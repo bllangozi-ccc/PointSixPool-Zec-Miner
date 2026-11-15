@@ -1,3 +1,4 @@
+from performance_policy import check_memory,required_memory_kib
 #!/usr/bin/env python3
 """PointSixPool Zec Miner Windows candidate. Loopback UI; never mines until Start."""
 from pathlib import Path
@@ -41,11 +42,11 @@ def options(value):
  if type(threads)is not int or not 1<=threads<=min(4,len(available)):raise ValueError('Choose 1–4 available CPU threads.')
  if type(hours)is not int or not 1<=hours<=24:raise ValueError('Choose a run time of 1–24 hours.')
  memory=free_memory_kib()
- if memory<3*1024*1024:raise ValueError('At least3GiB of free memory is required before starting.')
+ check_memory(memory,threads)
  return {**value,'cpus':available[:threads]}
 
 def command(v,seconds):
- return ['dotnet',str(ROOT/'Point6Miner.Cli.dll'),'--mine','--pool',POOL,'--address',v['identity'],'--identity-kind',v['kind'],'--worker',v['worker'],'--solver',str(ROOT/'point6miner-equihash.exe'),'--solver-sha256',EXPECTED['point6miner-equihash.exe'],'--solver-threads',str(v['threads']),'--difficulty','0.0001220703125','--max-seconds',str(max(1,min(3600,int(seconds)))),'--max-shares','100','--reconnects','0','--solver-seconds','120','--cpu-seconds','110','--solver-memory-mib','2048']
+ return ['dotnet',str(ROOT/'Point6Miner.Cli.dll'),'--mine','--pool',POOL,'--address',v['identity'],'--identity-kind',v['kind'],'--worker',v['worker'],'--solver',str(ROOT/'point6miner-equihash.exe'),'--solver-sha256',EXPECTED['point6miner-equihash.exe'],'--solver-threads',str(v['threads']),'--difficulty','0.0001220703125','--max-seconds',str(max(1,min(3600,int(seconds)))),'--max-shares','100','--reconnects','0','--solver-seconds','120','--cpu-seconds','110','--solver-memory-mib',str((required_memory_kib(v['threads'])-512*1024)//1024)]
 
 def terminate(p):
  if p is None or p.poll()is not None:return

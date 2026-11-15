@@ -1,3 +1,5 @@
+import sys
+from performance_policy import check_memory,required_memory_kib
 from setup_config import load as load_setup
 from miner_links import portal_url
 from miner_efficiency import hardware, monitor, recommended_measured
@@ -47,11 +49,11 @@ def options(value):
  if type(threads)is not int or not 1<=threads<=min(4,len(available)):raise ValueError('Choose 1–4 available CPU threads.')
  if type(hours)is not int or not 1<=hours<=24:raise ValueError('Choose a run time of 1–24 hours.')
  memory=next(int(line.split()[1])for line in Path('/proc/meminfo').read_text().splitlines()if line.startswith('MemAvailable:'))
- if memory<3*1024*1024:raise ValueError('At least3GiB of free memory is required before starting.')
+ check_memory(memory,threads)
  return {**value,'cpus':available[:threads]}
 
 def command(v,seconds):
- return ['taskset','-c',','.join(map(str,v['cpus'])),str(ROOT/'backend/Point6Miner.Cli'),'--mine','--pool',REGION_POOLS[v.get('region','EU')],'--address',v['identity'],'--identity-kind',v['kind'],'--worker',v['worker'],'--solver',str(ROOT/'point6miner-equihash'),'--solver-sha256',EXPECTED['point6miner-equihash'],'--solver-threads',str(v['threads']),'--difficulty','0.0001220703125','--max-seconds',str(max(1,min(3600,int(seconds)))),'--max-shares','100','--reconnects','0','--solver-seconds','120','--cpu-seconds','110','--solver-memory-mib','2048']
+ return ['taskset','-c',','.join(map(str,v['cpus'])),str(ROOT/'backend/Point6Miner.Cli'),'--mine','--pool',REGION_POOLS[v.get('region','EU')],'--address',v['identity'],'--identity-kind',v['kind'],'--worker',v['worker'],'--solver',str(ROOT/'point6miner-equihash'),'--solver-sha256',EXPECTED['point6miner-equihash'],'--solver-threads',str(v['threads']),'--difficulty','0.0001220703125','--max-seconds',str(max(1,min(3600,int(seconds)))),'--max-shares','100','--reconnects','0','--solver-seconds','120','--cpu-seconds','110','--solver-memory-mib',str((required_memory_kib(v['threads'])-512*1024)//1024)]
 
 def stop():
  STOP.set()

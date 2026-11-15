@@ -32,10 +32,14 @@ def available_cpus():
  if not result:raise OSError('No available CPU affinity.')
  return result
 
-def free_memory_kib():
+def memory_status_kib():
  k=kernel();m=MEMORYSTATUSEX();m.dwLength=ctypes.sizeof(m)
  if not k.GlobalMemoryStatusEx(ctypes.byref(m)):raise ctypes.WinError(ctypes.get_last_error())
- return m.ullAvailPhys//1024
+ total=m.ullTotalPhys//1024;available=m.ullAvailPhys//1024
+ if not 0<=available<=total or total<=0:raise OSError('Windows returned an invalid physical RAM reading.')
+ return {'total':total,'available':available}
+
+def free_memory_kib():return memory_status_kib()['available']
 
 def has_avx2():return bool(kernel().IsProcessorFeaturePresent(40))
 

@@ -28,3 +28,15 @@ def linux_battery():
   if any(s=='Discharging'for s in states):return True
   return False if all(s in('Charging','Full','Not charging')for s in states)else None
  except (OSError,ValueError):return None
+
+def required_memory_kib(threads):
+ if type(threads)is not int or not 1<=threads<=4:raise ValueError('Choose 1–4 CPU threads.')
+ # One thread measured below 256MiB on Linux; retain >=512MiB host headroom.
+ # Windows must pass its own lifecycle/runtime checks before release.
+ return 1024*1024+(threads-1)*512*1024
+
+def check_memory(free_kib,threads):
+ if type(free_kib)is not int or free_kib<0:raise ValueError('Free RAM could not be measured safely.')
+ needed=required_memory_kib(threads)
+ if free_kib<needed:
+  raise ValueError(f'Not enough available RAM: {free_kib/1024**2:.1f} GiB available; {needed/1024**2:g} GiB needed. Save your work, close unused apps or browser tabs, lower the mining speed, then try again.')

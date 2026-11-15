@@ -41,3 +41,6 @@ The editable Linux archive and an unconfigured Windows executable are available 
 Source availability is not a claim that modified software cannot connect elsewhere. Third-party components retain their own terms; see [NOTICE.md](NOTICE.md) and `licenses/`. Do not infer a blanket open-source licence for files without an explicit licence notice.
 
 [GitHub support](https://github.com/bllangozi-ccc/PointSixPool-Zec-Miner/issues) · [Forum guides](https://pointsixpool.com/forum). Never post private keys, recovery words, passwords or login tokens.
+
+
+Development RAM update: total installed RAM and currently available RAM are different. The revised low-speed setting requires1GiB available, with an additional0.5GiB for each extra CPU thread (maximum4). Close unused applications/tabs or choose a lower speed if the check refuses startup. Drive free space is separate. Windows CI and the refreshed downloadable build must pass before this change is advertised as released.

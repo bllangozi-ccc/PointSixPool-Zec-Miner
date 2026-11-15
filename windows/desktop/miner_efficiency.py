@@ -12,17 +12,17 @@ def hardware():
         from windows_resources import available_cpus
         cpus = available_cpus()
     else: cpus = sorted(os.sched_getaffinity(0))
-    memory = None; avx2 = None
+    memory = None; total_memory = None; avx2 = None
     try:
         if os.name == 'nt':
-            from windows_resources import free_memory_kib, has_avx2
-            memory = free_memory_kib(); avx2 = has_avx2()
+            from windows_resources import free_memory_kib, has_avx2, memory_status_kib
+            ram = memory_status_kib(); memory = ram['available']; total_memory = ram['total']; avx2 = has_avx2()
         else:
             memory = next(int(l.split()[1]) for l in Path('/proc/meminfo').read_text().splitlines() if l.startswith('MemAvailable:'))
             avx2 = 'avx2' in Path('/proc/cpuinfo').read_text()
     except (OSError, ValueError, StopIteration): pass
     return {'os': platform.system(), 'architecture': platform.machine(), 'avx2': avx2,
-            'available_cpu_threads': len(cpus), 'processor': platform.processor() or 'CPU',
+            'available_memory_kib':memory,'total_memory_kib':total_memory,'available_cpu_threads': len(cpus), 'processor': platform.processor() or 'CPU',
             'mining_device': 'CPU', 'gpu_mining_supported': False}
 
 
