@@ -36,6 +36,7 @@ jobs:
           python windows/desktop/test_performance.py
           python tests/test_efficiency.py
           python tests/test_runtime_diagnostics.py
+          python tests/test_miner_reports.py
           python tests/test_memory.py
           python tests/test_windows_sensors.py
           ./windows/build-desktop.ps1
@@ -69,6 +70,9 @@ jobs:
           python3 -B tests/test_linux_start.py
           python3 -B tests/test_efficiency.py
           python3 -B tests/test_runtime_diagnostics.py
+          python3 -B tests/test_miner_reports.py
+          python3 -B tests/test_server_setup_policy.py
+          python3 -B tests/test_installer_home.py
           python3 -B tests/test_memory.py
           python3 -B tests/test_regions.py
           python3 -B tests/test_links.py

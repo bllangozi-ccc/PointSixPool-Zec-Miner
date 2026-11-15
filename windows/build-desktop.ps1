@@ -8,6 +8,7 @@ New-Item -ItemType Directory -Force $backend | Out-Null
 if ($LASTEXITCODE -ne 0) { throw 'Bundled miner runtime build failed' }
 Copy-Item (Join-Path $PSScriptRoot 'package/point6miner-equihash.exe') $payload
 Copy-Item (Join-Path $PSScriptRoot 'windows_resources.py') $source
+Copy-Item (Join-Path $PSScriptRoot 'miner_report.py') $source
 $pins = [ordered]@{}
 Get-ChildItem $payload -Recurse -File | Sort-Object FullName | ForEach-Object {
  $relative = [System.IO.Path]::GetRelativePath($payload, $_.FullName).Replace('\','/')

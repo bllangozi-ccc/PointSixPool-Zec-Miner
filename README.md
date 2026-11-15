@@ -56,7 +56,7 @@ Development RAM update: total installed RAM and currently available RAM are diff
 
 ## Miner error codes
 
-In **Help**, choose **Copy miner error code** or **Report miner error**. The report opens a draft for you to review; it does not send automatically. It includes no wallet, mining ID or credentials.
+In the next candidate, choose **Report error** on the dashboard or **Send error to PointSixPool** in Help. This explicit click sends the error code and basic counters through our existing support form to Owner Reports. A saved report returns a reference. No wallet, mining ID, credentials or full logs are included. The candidate also adds a compact dark dashboard and recorded accepted-share graph. Public binary updates follow native build qualification.
 
 | Code | Meaning | Next step |
 |---|---|---|

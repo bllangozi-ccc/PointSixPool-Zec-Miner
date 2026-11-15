@@ -11,7 +11,7 @@ def connection_state(state):
 
 class FanIndicator(ttk.Frame):
  def __init__(self,parent):
-  super().__init__(parent);self.phase=0;self.mode='stopped';self.canvas=tk.Canvas(self,width=40,height=40,bg='#f3f5f4',highlightthickness=0);self.canvas.pack(side='left');self.label=ttk.Label(self,text='Stopped');self.label.pack(side='left',padx=(4,12));self.after(80,self.animate)
+  super().__init__(parent);self.phase=0;self.mode='stopped';self.canvas=tk.Canvas(self,width=40,height=40,bg='#142033',highlightthickness=0);self.canvas.pack(side='left');self.label=ttk.Label(self,text='Stopped');self.label.pack(side='left',padx=(4,12));self.after(80,self.animate)
  def update_state(self,state):
   self.mode=connection_state(state);self.label.configure(text={'working':'Connected','connecting':'Connecting…','stopped':'Stopped','attention':'Needs attention'}[self.mode])
  def animate(self):
