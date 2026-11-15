@@ -30,7 +30,7 @@ def linux_battery():
  except (OSError,ValueError):return None
 
 def required_memory_kib(threads):
- if type(threads)is not int or not 1<=threads<=4:raise ValueError('Choose 1–4 CPU threads.')
+ if type(threads)is not int or not 1<=threads<=12:raise ValueError('Choose 1–12 CPU threads.')
  # One thread measured below 256MiB on Linux; retain >=512MiB host headroom.
  # Windows must pass its own lifecycle/runtime checks before release.
  return 1024*1024+(threads-1)*512*1024

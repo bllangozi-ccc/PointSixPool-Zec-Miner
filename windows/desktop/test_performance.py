@@ -16,8 +16,18 @@ class Performance(unittest.TestCase):
   with self.assertRaises(ValueError):check_memory(1536*1024-1,2)
  def test_not_enough_ram_even_for_lowest_speed(self):
   with self.assertRaises(ValueError):check_memory(1024*1024-1,1)
- def test_limits_retain_four_thread_ceiling(self):
+ def test_manual_twelve_thread_ceiling(self):
   self.assertEqual(required_memory_kib(4),2560*1024)
-  for value in [0,5,True]:
+  for value in [0,13,True]:
    with self.assertRaises(ValueError):required_memory_kib(value)
+class ManualCapacityTests(unittest.TestCase):
+ def test_twelve_threads_memory_boundary(self):
+  self.assertEqual(required_memory_kib(12),6656*1024)
+  check_memory(6656*1024,12)
+  with self.assertRaises(ValueError):check_memory(6656*1024-1,12)
+ def test_manual_limit_rejects_thirteen(self):
+  with self.assertRaises(ValueError):required_memory_kib(13)
+ def test_auto_stays_four_on_large_host(self):
+  self.assertEqual(recommend_threads(24,32*1024**2,False),4)
+
 if __name__=='__main__':unittest.main()

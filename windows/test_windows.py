@@ -48,7 +48,7 @@ try:
   except urllib.error.HTTPError as e:return e.code,e.read().decode()
  status,raw=request('/api/status');state=json.loads(raw)
  check(status==200 and state['running']is False and state['sessions']==0,'startup is idle and no mining auto-starts')
- check(1<=state['max_threads']<=4,'performance slider follows host capacity')
+ check(1<=state['max_threads']<=12,'performance slider follows host capacity')
  check(request('/api/status',auth=False)[0]==403,'API requires local session token')
  check(request('/api/status',origin='https://unrelated.invalid')[0]==403,'cross-origin control refused')
  check(request('/api/start',{'identity':'bad','kind':'wallet','worker':'test','threads':1,'hours':1})[0]==400,'bad wallet refused before launch')

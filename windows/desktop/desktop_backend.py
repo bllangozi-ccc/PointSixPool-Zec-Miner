@@ -44,7 +44,7 @@ def options(value):
   raw=b'\0'*(len(identity)-len(identity.lstrip('1')))+n.to_bytes((n.bit_length()+7)//8,'big')
   if len(raw)!=26 or raw[:2]not in(b'\x1c\xb8',b'\x1c\xbd')or not hmac.compare_digest(hashlib.sha256(hashlib.sha256(raw[:22]).digest()).digest()[:4],raw[22:]):raise ValueError('ZEC mainnet address checksum failed.')
  threads=value['threads'];hours=value['hours'];available=available_cpus()
- if type(threads)is not int or not 1<=threads<=min(4,len(available)):raise ValueError('Choose 1–4 available CPU threads.')
+ if type(threads)is not int or not 1<=threads<=min(12,len(available)):raise ValueError('Choose 1–12 available CPU threads.')
  if type(hours)is not int or not 1<=hours<=24:raise ValueError('Choose a run time of 1–24 hours.')
  memory=free_memory_kib()
  check_memory(memory,threads)

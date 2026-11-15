@@ -61,7 +61,7 @@ def setup():
  miner.verify();print('PointSixPool ZEC MICRO · 0.6% pool fee\nEnter public details only. Saving these choices starts your miner. Ctrl+C cancels.')
  kind='registered'if input('Use registered pool ID instead of wallet? [y/N]: ').strip().lower()=='y'else'wallet'
  identity=input('Wallet address: 'if kind=='wallet'else'Registered pool ID: ').strip();worker=input('Worker name [Point6Miner-Linux]: ').strip()or'Point6Miner-Linux'
- cpus=len(os.sched_getaffinity(0));mem=next(int(l.split()[1])for l in Path('/proc/meminfo').read_text().splitlines()if l.startswith('MemAvailable:'));auto=min(miner.recommended_measured() or 4,recommend_threads(cpus,mem,linux_battery()));choice=input(f'CPU threads [Auto: {auto}; maximum {min(4,cpus)}]: ').strip();threads=int(choice)if choice else auto
+ cpus=len(os.sched_getaffinity(0));mem=next(int(l.split()[1])for l in Path('/proc/meminfo').read_text().splitlines()if l.startswith('MemAvailable:'));auto=min(miner.recommended_measured() or 4,recommend_threads(cpus,mem,linux_battery()));choice=input(f'CPU threads [Auto: {auto}; maximum {min(12,cpus)}]: ').strip();threads=int(choice)if choice else auto
  region=input('Region [EU / USA / ASIA; Enter for EU]: ').strip().upper()or'EU'
  v={'kind':kind,'identity':identity,'worker':worker,'threads':threads,'hours':24,'region':region};miner.options(v)
  print('View your stats and earnings: '+portal_url(kind,identity))

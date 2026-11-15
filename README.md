@@ -65,3 +65,5 @@ In the next candidate, choose **Report error** on the dashboard or **Send error 
 | P6M-E103 | A share acknowledgement or final share accounting is uncertain. | Keep mining stopped and report the code. The submitted proof is never replayed. |
 
 A green fan shows an authorized connection; accepted shares confirm work. A stopped engine requires attention. This diagnostic update does not establish the cause of the reported five-minute Windows stops.
+
+Performance: Auto remains conservative, with a maximum of 4 CPU threads. Stop mining to select up to 12 threads manually; the miner checks available CPU threads and free RAM before starting. Twelve threads require at least 6.5 GiB available RAM. Start low and increase gradually. Thermal protection requires a detected supported sensor.

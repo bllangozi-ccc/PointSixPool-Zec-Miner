@@ -9,7 +9,7 @@ public sealed record SolverProcessLimits(int WallSeconds = 120, int CpuSeconds =
 {
     internal void Validate()
     {
-        if (WallSeconds is < 1 or > 300 || CpuSeconds is < 1 or > 120 || MemoryMiB is < 64 or > 2048 || Threads is < 1 or > 16)
+        if (WallSeconds is < 1 or > 300 || CpuSeconds is < 1 or > 120 || MemoryMiB is < 64 or > 8192 || Threads is < 1 or > 16)
             throw new ArgumentException("Solver limits exceed this private CPU test backend's bounds (1–16 threads).");
     }
 }

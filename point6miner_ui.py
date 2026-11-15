@@ -46,7 +46,7 @@ def options(value):
   raw=b'\0'*(len(identity)-len(identity.lstrip('1')))+n.to_bytes((n.bit_length()+7)//8,'big')
   if len(raw)!=26 or raw[:2]not in(b'\x1c\xb8',b'\x1c\xbd')or not hmac.compare_digest(hashlib.sha256(hashlib.sha256(raw[:22]).digest()).digest()[:4],raw[22:]):raise ValueError('ZEC mainnet address checksum failed.')
  threads=value['threads'];hours=value['hours'];available=sorted(os.sched_getaffinity(0))
- if type(threads)is not int or not 1<=threads<=min(4,len(available)):raise ValueError('Choose 1–4 available CPU threads.')
+ if type(threads)is not int or not 1<=threads<=min(12,len(available)):raise ValueError('Choose 1–12 available CPU threads.')
  if type(hours)is not int or not 1<=hours<=24:raise ValueError('Choose a run time of 1–24 hours.')
  memory=next(int(line.split()[1])for line in Path('/proc/meminfo').read_text().splitlines()if line.startswith('MemAvailable:'))
  check_memory(memory,threads)
@@ -137,7 +137,7 @@ class Handler(BaseHTTPRequestHandler):
  def do_GET(self):
   if self.path=='/'and self.headers.get('Host')=='127.0.0.1:'+str(self.server.server_port):return self.reply(200,HTML,True)
   if self.path!='/api/status'or not self.allowed():return self.reply(403,{'error':'Local session verification required.'})
-  with LOCK:v={**STATE,'log':list(LOG),'max_threads':min(4,len(os.sched_getaffinity(0))),'recommended_threads':min(recommended_measured() or 4,recommend_threads(len(os.sched_getaffinity(0)),next(int(l.split()[1])for l in Path('/proc/meminfo').read_text().splitlines()if l.startswith('MemAvailable:')),linux_battery()))}
+  with LOCK:v={**STATE,'log':list(LOG),'max_threads':min(12,len(os.sched_getaffinity(0))),'recommended_threads':min(recommended_measured() or 4,recommend_threads(len(os.sched_getaffinity(0)),next(int(l.split()[1])for l in Path('/proc/meminfo').read_text().splitlines()if l.startswith('MemAvailable:')),linux_battery()))}
   return self.reply(200,v)
  def do_POST(self):
   if self.path not in('/api/start','/api/stop')or not self.allowed():return self.reply(403,{'error':'Local session verification required.'})

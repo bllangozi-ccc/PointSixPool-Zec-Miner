@@ -54,3 +54,5 @@ Choose EU, USA or ASIA. The miner selects the matching MICRO endpoint automatica
 The miner remains MICRO-only; the website separately explains PPLNS and SOLO.
 
 Windows optional sensors: use the official [LibreHardwareMonitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor) application. Some sensors require that separate application to run with administrator permission; our miner stays unelevated. Sampled CPU-package watts are integrated over time and exclude the rest of the machine. Sensor support and readings must be checked on the actual PC.
+
+Performance: Auto remains conservative, with a maximum of 4 CPU threads. Stop mining to select up to 12 threads manually; the miner checks available CPU threads and free RAM before starting. Twelve threads require at least 6.5 GiB available RAM. Start low and increase gradually. Thermal protection requires a detected supported sensor.
