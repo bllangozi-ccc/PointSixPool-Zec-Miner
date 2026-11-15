@@ -325,7 +325,7 @@ public sealed class ZecStratumMiner
                     }
                 }
                 catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-                { progress?.Invoke(new("work-cancelled", "Work stopped after a job/target change or solver budget limit.")); }
+                { progress?.Invoke(new("work-cancelled", "Refreshing mining work after a job/target update or per-job time limit.")); }
                 finally { lock (gate) if (ReferenceEquals(activeWork, work)) { activeWork = null; activeJob = null; } }
             }
         }

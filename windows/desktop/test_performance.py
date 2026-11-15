@@ -6,7 +6,12 @@ class Performance(unittest.TestCase):
  def test_large_host_cap(self):self.assertEqual(recommend_threads(128,128*1024**2,False),4)
  def test_battery(self):self.assertEqual(recommend_threads(16,16*1024**2,True),1)
  def test_unknown_power(self):self.assertEqual(recommend_threads(16,16*1024**2,None),1)
- def test_low_memory(self):self.assertEqual(recommend_threads(16,3*1024**2,False),1)
+ def test_four_threads_fit_below_old_blanket_cutoff(self):self.assertEqual(recommend_threads(16,3700*1024,False),4)
+ def test_auto_obeys_exact_ram_boundary(self):
+  self.assertEqual(recommend_threads(16,2560*1024,False),4)
+  self.assertEqual(recommend_threads(16,2560*1024-1,False),3)
+  self.assertEqual(recommend_threads(16,1536*1024,False),2)
+  self.assertEqual(recommend_threads(16,1024*1024,False),1)
  def test_bad_resources(self):
   for a,m in[(0,4000000),(4,-1),(True,4000000)]:
    with self.assertRaises(ValueError):recommend_threads(a,m,False)
