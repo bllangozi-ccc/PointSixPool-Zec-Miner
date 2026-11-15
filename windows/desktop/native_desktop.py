@@ -134,20 +134,30 @@ def main():
   b.GUARD=b.ParentExitGuard();window=MinerWindow(root,b)
   if '--smoke-test'in sys.argv:
    def smoke():
-    assert not b.STATE['running']and b.CHILD is None;
-    root.geometry('860x700');root.update_idletasks()
-    for control in [window.power,window.slider,window.share_chart,window.messages,window.quick_report]:
-     assert control.winfo_ismapped()
-     assert control.winfo_rootx()+control.winfo_width()<=root.winfo_rootx()+root.winfo_width()+2
-     assert control.winfo_rooty()+control.winfo_height()<=root.winfo_rooty()+root.winfo_height()+2
-    with b.LOCK:b.STATE['state']='P6M-E101 · Engine exit 2 · IOException. No complete result; stopped without replay.'
-    window.refresh();assert 'disabled'not in window.quick_report.state();assert 'P6M-E101'in window.error_summary()
-    with b.LOCK:b.STATE['state']='Ready. Mining is off.'
-    window.refresh()
-
-    if os.environ.get('POINTSIX_SMOKE_EXPECT_SETUP')=='1':assert window.worker.get()=='Desktop-CI'and window.region.get()=='ASIA'and window.identity.get()=='t1VL5XNfTPehmSxrszsSJC1hJUrYGUHbAFg'
-    window.running=True;window.show_speed_hint();assert any('Stop mining to adjust speed' in str(c.cget('text')) for c in window.speed_hint.winfo_children());window.hide_speed_hint();window.running=False;assert window.power.cget('text')=='▶  Start Mining';assert window.thread_label.get().startswith('Auto');out=Path(os.environ.get('POINTSIX_SMOKE_RESULT','DESKTOP-SMOKE.PUBLIC.json'));out.write_text(json.dumps({'passed':True,'native_gui_opened':True,'mining_started':False,'python_commands_required':False,'bundled_executable':bool(getattr(sys,'frozen',False))}));window.close()
+    try:
+     assert not b.STATE['running']and b.CHILD is None;
+     root.geometry('860x700');root.update_idletasks()
+     for control in [window.power,window.slider,window.share_chart,window.messages,window.quick_report]:
+      assert control.winfo_ismapped()
+      assert control.winfo_rootx()+control.winfo_width()<=root.winfo_rootx()+root.winfo_width()+2
+      assert control.winfo_rooty()+control.winfo_height()<=root.winfo_rooty()+root.winfo_height()+2
+     with b.LOCK:b.STATE['state']='P6M-E101 · Engine exit 2 · IOException. No complete result; stopped without replay.'
+     window.refresh();assert 'disabled'not in window.quick_report.state();assert 'P6M-E101'in window.error_summary()
+     with b.LOCK:b.STATE['state']='Ready. Mining is off.'
+     window.refresh()
+ 
+     if os.environ.get('POINTSIX_SMOKE_EXPECT_SETUP')=='1':assert window.worker.get()=='Desktop-CI'and window.region.get()=='ASIA'and window.identity.get()=='t1VL5XNfTPehmSxrszsSJC1hJUrYGUHbAFg'
+     window.running=True;window.show_speed_hint();assert any('Stop mining to adjust speed' in str(c.cget('text')) for c in window.speed_hint.winfo_children());window.hide_speed_hint();window.running=False;assert window.power.cget('text')=='▶  Start Mining';assert window.thread_label.get().startswith('Auto');out=Path(os.environ.get('POINTSIX_SMOKE_RESULT','DESKTOP-SMOKE.PUBLIC.json'));out.write_text(json.dumps({'passed':True,'native_gui_opened':True,'mining_started':False,'python_commands_required':False,'bundled_executable':bool(getattr(sys,'frozen',False))}))
+    except Exception as error:
+     import traceback
+     out=Path(os.environ.get('POINTSIX_SMOKE_RESULT','DESKTOP-SMOKE.PUBLIC.json'));out.write_text(json.dumps({'passed':False,'error_type':type(error).__name__,'source_lines':[frame.lineno for frame in traceback.extract_tb(error.__traceback__)],'mining_started':b.STATE['running'],'bundled_executable':bool(getattr(sys,'frozen',False)),'controls':[{'widget':str(control),'visible':bool(control.winfo_ismapped()),'right':control.winfo_rootx()+control.winfo_width()-root.winfo_rootx(),'bottom':control.winfo_rooty()+control.winfo_height()-root.winfo_rooty()}for control in [window.power,window.slider,window.share_chart,window.messages,window.quick_report]],'window':[root.winfo_width(),root.winfo_height()]}))
+    finally:window.close()
    root.after(1000,smoke)
   root.mainloop()
- except Exception as e:root.withdraw();messagebox.showerror('PointSixPool Zec Miner',str(e)[:250],parent=root);root.destroy()
+ except Exception as e:
+  if '--smoke-test'in sys.argv:
+   import traceback
+   Path(os.environ.get('POINTSIX_SMOKE_RESULT','DESKTOP-SMOKE.PUBLIC.json')).write_text(json.dumps({'passed':False,'error_type':type(e).__name__,'source_lines':[frame.lineno for frame in traceback.extract_tb(e.__traceback__)],'mining_started':False}))
+  else:root.withdraw();messagebox.showerror('PointSixPool Zec Miner',str(e)[:250],parent=root)
+  root.destroy()
 if __name__=='__main__':main()

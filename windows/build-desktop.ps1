@@ -28,7 +28,7 @@ $process = Start-Process -FilePath $exe -ArgumentList '--smoke-test' -PassThru
 if (-not $process.WaitForExit(30000)) { Stop-Process -Id $process.Id -Force; throw 'Desktop non-mining GUI smoke test timed out' }
 if ($process.ExitCode -ne 0 -or -not (Test-Path $env:POINTSIX_SMOKE_RESULT)) { throw 'Desktop GUI smoke test failed' }
 $result = Get-Content $env:POINTSIX_SMOKE_RESULT -Raw | ConvertFrom-Json
-if (-not $result.passed -or $result.mining_started -or -not $result.bundled_executable) { throw 'Desktop smoke evidence invalid' }
+if (-not $result.passed -or $result.mining_started -or -not $result.bundled_executable) { Get-Content $env:POINTSIX_SMOKE_RESULT; throw 'Desktop smoke evidence invalid' }
 (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant() | Set-Content (Join-Path $PSScriptRoot 'DESKTOP-SHA256.txt')
 
 Remove-Item $setupPath
