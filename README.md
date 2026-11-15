@@ -22,6 +22,14 @@ Opening or installing the application does not start mining. Root installs the L
 
 This beta needs an x86_64 AVX2 CPU and **1 GiB available RAM for one CPU thread, plus 0.5 GiB per extra thread**. It does not mine with GPUs or phones. Auto starts conservatively; stop before changing the speed control. Measured presets require at least 30 minutes, 20 accepted shares and complete energy readings.
 
+### Server use and manual controls
+
+The two-step server setup offers **Shared server** (default) or **Mining Server**. Auto chooses an initial CPU allocation from the server's actual CPU affinity and available RAM. Shared leaves more headroom; Mining Server uses more of the supported capacity while retaining system headroom. Both retain the current four-thread engine limit. This is resource selection, not continuous benchmark tuning.
+
+You can instead choose 1–4 CPU threads and optionally enter available RAM in GB. The installer rejects choices exceeding measured capacity; an entered RAM figure can only lower the measured budget. Stop mining before rerunning setup to change server choices. Windows and Linux desktop keep their manual performance slider: stop, adjust, restart.
+
+To check memory on Windows, press **Ctrl+Shift+Esc → Performance → Memory → Available**. Use More details if needed. On the Linux server, run `free -h` and read **Available**. Use free system RAM, not drive space or GPU memory. Save work and close unused apps if RAM is low. The miner checks available RAM again when starting.
+
 Supported temperature sensors trigger reduced speed at 75°C and stopping at 85°C. Missing readings remain unavailable. Windows can read an already-running compatible LibreHardwareMonitor provider; the miner installs no sensor driver. Efficiency uses acknowledged difficulty-weighted work and sampled CPU-package energy, excluding the rest of the computer. It is not a profit forecast.
 
 The Linux runtime is bundled and does not require system ICU. Windows opens a native interface; Linux opens a local browser interface. Uncertain share acknowledgements stop rather than replaying the share. Mining is never run in GitHub Actions; build checks use help, settings import and non-mining lifecycle tests.

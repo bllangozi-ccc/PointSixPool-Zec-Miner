@@ -2,6 +2,7 @@
 import os,sys,json,base64,fcntl,pathlib,subprocess,hashlib,urllib.request,tarfile,tempfile,shutil,pwd,platform,stat
 sys.path.insert(0,str(pathlib.Path(__file__).resolve().parent))
 from setup_config import validate,options
+from server_setup_policy import parse_options,select_threads
 BASE=pathlib.Path('/opt/pointsixpool-miner');USER='pointsix-miner';HOME_DIR='/var/lib/pointsix-miner';ORIGIN='https://pointsixpool.com'
 # Replaced during packaging with the exact release archive's SHA256.
 ARCHIVE_SHA256='RELEASE_ARCHIVE_SHA256';ARCHIVE_URL=ORIGIN+'/static/downloads/PointSixPool-Miner-Linux.tar.gz'
@@ -59,7 +60,11 @@ def main():
  if 'avx2'not in pathlib.Path('/proc/cpuinfo').read_text():raise ValueError('This CPU does not support AVX2.')
  if len(sys.argv)!=2:raise ValueError('Copy the complete installation command from the miner page.')
  if len(sys.argv[1])>8192:raise ValueError('Settings too large')
- config=validate(json.loads(base64.urlsafe_b64decode(sys.argv[1]).decode('utf8')))
+ raw=json.loads(base64.urlsafe_b64decode(sys.argv[1]).decode('utf8'))
+ if not isinstance(raw,dict):raise ValueError('Invalid installer settings')
+ performance=parse_options(raw.pop('server_options',{}));config=validate(raw)
+ free_kib=next(int(line.split()[1])for line in pathlib.Path('/proc/meminfo').read_text().splitlines()if line.startswith('MemAvailable:'))
+ selected_threads=select_threads(performance,len(os.sched_getaffinity(0)),free_kib)
  if not shutil.which('systemctl')or not pathlib.Path('/run/systemd/system').exists():raise ValueError('This simple installer needs a systemd Linux server. Use the advanced download instead.')
  if not shutil.which('taskset'):raise ValueError('Install util-linux first; the bootstrap normally handles this.')
  lockpath=pathlib.Path('/run/lock/pointsixpool-miner-install.lock')
@@ -107,7 +112,7 @@ def main():
    configdir=pathlib.Path('/etc/pointsixpool-miner')
    if configdir.is_symlink()or configdir.exists()and(configdir.stat().st_uid!=0 or configdir.stat().st_mode&0o022):raise ValueError('Unsafe system settings directory')
    configdir.mkdir(mode=0o750,exist_ok=True);os.chown(configdir,0,account.pw_gid);configdir.chmod(0o750)
-   atomic(configdir/'config.json',json.dumps(options(config,threads="auto")).encode(),0o640);os.chown(configdir/'config.json',0,account.pw_gid)
+   atomic(configdir/'config.json',json.dumps(options(config,threads=selected_threads)).encode(),0o640);os.chown(configdir/'config.json',0,account.pw_gid)
    # Service file pins the immutable release directory, so no writable current-version link is trusted.
    content=f'''{marker}
   [Unit]
@@ -132,7 +137,7 @@ def main():
   ReadWritePaths={HOME_DIR}
   UMask=0077
   MemoryMax=3G
-  CPUQuota=400%
+  CPUQuota={selected_threads*100}%
   [Install]
   WantedBy=multi-user.target
   '''
@@ -150,7 +155,7 @@ def main():
    try:run(['systemctl','daemon-reload'])
    except Exception:pass
    raise
-  print('Installation complete. Mining is OFF.\nWallet/ID: '+config['identity']+'\nMachine: '+config['worker']+'\nRegion: '+config['region']+' (currently our EU server)\nStart: /start-mining\nStop: /stop-mining\nOptional start after reboot: systemctl enable pointsixpool-miner.service\nMining runs as '+USER+', never root.\nStats: https://pointsixpool.com/status')
+  print('Performance: '+('Shared server'if performance['server_use']=='shared'else'Mining Server')+' · '+str(selected_threads)+' CPU thread(s). Re-run setup to change settings.');print('Installation complete. Mining is OFF.\nWallet/ID: '+config['identity']+'\nMachine: '+config['worker']+'\nRegion: '+config['region']+' (currently our EU server)\nStart: /start-mining\nStop: /stop-mining\nOptional start after reboot: systemctl enable pointsixpool-miner.service\nMining runs as '+USER+', never root.\nStats: https://pointsixpool.com/status')
 if __name__=='__main__':
  try:main()
  except Exception as e:print('Installation stopped: '+str(e),file=sys.stderr);sys.exit(1)
