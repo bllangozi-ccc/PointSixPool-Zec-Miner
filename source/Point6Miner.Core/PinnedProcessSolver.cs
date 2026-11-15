@@ -146,7 +146,7 @@ public sealed class PinnedProcessSolver : IMiningWorkSolver
             await errors;
             timeout.Token.ThrowIfCancellationRequested();
             if (process.ExitCode == 124) throw new OperationCanceledException("Solver reached its cooperative time budget.");
-            if (process.ExitCode != 0) throw new IOException("Solver exited unsuccessfully.");
+            if (process.ExitCode != 0) throw new SolverProcessExitException(process.ExitCode);
         }
         finally
         {
@@ -190,8 +190,10 @@ public sealed class PinnedProcessSolver : IMiningWorkSolver
 public sealed class SolverFailureException : IOException
 {
     public string Reason { get; }
+    public int? NativeExitCode { get; }
     public SolverFailureException(IOException error) : base("Local solver failed; stopped without replay.", error)
     {
+        NativeExitCode = (error as SolverProcessExitException)?.ExitCode;
         Reason = error.Message switch
         {
             "Solver exited unsuccessfully." => "solver-exit",
@@ -201,4 +203,10 @@ public sealed class SolverFailureException : IOException
             _ => "solver-io"
         };
     }
+}
+
+internal sealed class SolverProcessExitException : IOException
+{
+    public int ExitCode { get; }
+    public SolverProcessExitException(int exitCode) : base("Solver exited unsuccessfully.") { ExitCode = exitCode; }
 }

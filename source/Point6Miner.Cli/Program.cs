@@ -47,6 +47,6 @@ catch (Exception error) when (error is ArgumentException or IOException or Syste
     System.Security.Authentication.AuthenticationException or FormatException or OverflowException or System.ComponentModel.Win32Exception)
 {
     // Error details contain no receiving address, endpoint userinfo or remote server text.
-    Console.Error.WriteLine(JsonSerializer.Serialize(new { error = error.GetType().Name, message = error.Message, reason = error is SolverFailureException solverError ? solverError.Reason : "engine-error" }));
+    Console.Error.WriteLine(JsonSerializer.Serialize(new { error = error.GetType().Name, message = error.Message, reason = error is SolverFailureException solverError ? solverError.Reason : "engine-error", solver_exit = (error as SolverFailureException)?.NativeExitCode }));
     return 2;
 }

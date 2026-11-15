@@ -71,7 +71,7 @@ def run(v):
  deadline=time.monotonic()+v['hours']*3600
  try:
   while not STOP.is_set()and time.monotonic()<deadline:
-   verify();final=None;runtime_error=None;runtime_reason=None
+   verify();final=None;runtime_error=None;runtime_reason=None;solver_exit=None
    with LOCK:
     session_base={k:STATE[k]for k in ['accepted','rejected','uncertain']}
     if STOP.is_set():break
@@ -85,6 +85,7 @@ def run(v):
      if isinstance(event,dict)and all(k in event for k in['Submitted','Accepted','Rejected','Uncertain']):final=event
      elif isinstance(event,dict)and isinstance(event.get('error'),str):
       runtime_error=event['error'] if re.fullmatch(r'[A-Za-z.]{1,80}',event['error']) else 'UnrecognizedError'
+      solver_exit=event.get('solver_exit') if type(event.get('solver_exit'))is int and -2**31<=event['solver_exit']<=2**32-1 else None
       runtime_reason=event.get('reason') if event.get('reason') in ('solver-exit','solver-start','solver-affinity','solver-io','engine-error') else None
      elif isinstance(event,dict)and'Kind'in event:
       with LOCK:
@@ -100,7 +101,7 @@ def run(v):
    code=p.wait(timeout=10)
    with LOCK:CHILD=None;STATE['connected']=False
    if STOP.is_set():break
-   if final is None:raise ValueError('P6M-E101 · Engine exit '+str(code)+' · '+(runtime_error or 'No error type received')+(' · '+runtime_reason if runtime_reason else '')+'. No complete result; stopped without replay. Copy this code to support.')
+   if final is None:raise ValueError('P6M-E101 · Engine exit '+str(code)+' · '+(runtime_error or 'No error type received')+(' · '+runtime_reason if runtime_reason else '')+(' · solver exit '+str(solver_exit) if solver_exit is not None else '')+'. No complete result; stopped without replay. Copy this code to support.')
    if not all(type(final[k])is int and final[k]>=0 for k in['Submitted','Accepted','Rejected','Uncertain']):raise ValueError('P6M-E102 · Invalid engine result; stopped without replay.')
    with LOCK:
     for key,field in [('accepted','Accepted'),('rejected','Rejected'),('uncertain','Uncertain')]:STATE[key]=session_base[key]+final[field]

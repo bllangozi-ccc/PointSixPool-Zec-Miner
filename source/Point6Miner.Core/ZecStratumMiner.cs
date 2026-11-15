@@ -157,7 +157,7 @@ public sealed class ZecStratumMiner
                     await winner;
                 }
             }
-            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested && reader.IsFaulted)
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested && session.IsCancellationRequested)
             { await reader; throw; }
             finally
             {

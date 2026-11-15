@@ -50,6 +50,8 @@ class MinerWindow:
   if error_type:summary+=' · '+error_type.group(1)
   reason=re.search(r' · (solver-exit|solver-start|solver-affinity|solver-io|engine-error)\.',state)
   if reason:summary+=' · '+reason.group(1)
+  native=re.search(r' · solver exit (-?\d+)',state)
+  if native:summary+=' · solver exit '+native.group(1)
   return summary+('\n'+self.last_report_error if self.last_report_error else '')
  def copy_error(self):
   self.root.clipboard_clear();self.root.clipboard_append(self.error_summary());messagebox.showinfo('Miner diagnostics','Copied the error code and engine exit status. No wallet, mining ID or credentials were included.',parent=self.root)
@@ -64,6 +66,8 @@ class MinerWindow:
   if error_type:value['error_type']=error_type.group(1)
   reason=re.search(r' · (solver-exit|solver-start|solver-affinity|solver-io|engine-error)\.',text)
   if reason:value['engine_reason']=reason.group(1)
+  native=re.search(r' · solver exit (-?\d+)',text)
+  if native:value['solver_exit']=int(native.group(1))
   if self.report_busy:return
   self.report_busy=True;self.report_button.state(['disabled']);self.quick_report.state(['disabled'])
   def send():

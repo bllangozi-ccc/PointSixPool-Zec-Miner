@@ -11,13 +11,13 @@ class Fields(HTMLParser):
 class NoRedirect(urllib.request.HTTPRedirectHandler):
  def redirect_request(self,*args,**kwargs):raise ReportError('Unexpected report redirect; nothing was confirmed.')
 def payload(value):
- allowed={'error_code','engine_exit','error_type','engine_reason','version','threads','run_hours','accepted','rejected','uncertain','elapsed_seconds'}
+ allowed={'error_code','engine_exit','solver_exit','error_type','engine_reason','version','threads','run_hours','accepted','rejected','uncertain','elapsed_seconds'}
  if not isinstance(value,dict)or set(value)-allowed:raise ValueError('Unexpected diagnostic field.')
  if not re.fullmatch(r'P6M-E\d{3}',value.get('error_code','')):raise ValueError('No reportable miner error code yet.')
  for k,v in value.items():
   if k in ('threads','run_hours','accepted','rejected','uncertain','elapsed_seconds'):
    if type(v)is not int or not 0<=v<=10**10:raise ValueError('Invalid diagnostic measurement.')
-  elif k=='engine_exit':
+  elif k in ('engine_exit','solver_exit'):
    if type(v)is not int or not -2**31<=v<=2**32-1:raise ValueError('Invalid engine exit status.')
   elif k=='engine_reason':
    if v not in ('solver-exit','solver-start','solver-affinity','solver-io','engine-error'):raise ValueError('Invalid engine reason.')
