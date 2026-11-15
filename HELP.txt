@@ -66,3 +66,6 @@ private key, wallet passphrase or payment password.
 Help and current pool rules: https://pointsixpool.com/point6miner
 
 SIMPLE SERVER INSTALL (upcoming release): choose Linux server on the miner page, copy the generated root installation command, then run /start-mining. Stop with /stop-mining. The installer never starts mining; the service runs as pointsix-miner, not root.
+
+Diagnostics: use Copy diagnostics. Code guide: docs/TROUBLESHOOTING.md
+A confirmed connection loss retries fresh work after 10 seconds only with all submitted shares accounted for. Solver faults or uncertain acknowledgements stop without replay.

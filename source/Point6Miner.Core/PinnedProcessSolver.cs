@@ -63,23 +63,41 @@ public sealed class PinnedProcessSolver : IMiningWorkSolver
         }
         throw new IOException("This CPU backend cannot verify CPU affinity on this platform.");
     }
-    private static void ApplyAffinity(Process process, IntPtr required)
+    private static void ApplyAffinity(Process process, IntPtr required, CancellationToken cancellationToken)
     {
         if (OperatingSystem.IsLinux() || OperatingSystem.IsWindows())
         {
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 process.ProcessorAffinity = required;
                 if (process.ProcessorAffinity != required)
                     throw new IOException("Solver CPU affinity did not match its required limits.");
                 return;
             }
             catch (Exception e) when (e is Win32Exception or InvalidOperationException or PlatformNotSupportedException)
-            { throw new IOException("Could not enforce solver CPU affinity before delivering work.", e); }
+            { cancellationToken.ThrowIfCancellationRequested(); throw new IOException("Could not enforce solver CPU affinity before delivering work.", e); }
         }
         throw new IOException("This CPU backend cannot enforce CPU affinity on this platform.");
     }
     public async IAsyncEnumerable<byte[]> SolveAsync(ReadOnlyMemory<byte> header,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await using var results = SolveCoreAsync(header, cancellationToken).GetAsyncEnumerator(cancellationToken);
+        while (true)
+        {
+            bool next;
+            try { next = await results.MoveNextAsync(); }
+            catch (IOException error)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                throw new SolverFailureException(error);
+            }
+            if (!next) yield break;
+            yield return results.Current;
+        }
+    }
+    private async IAsyncEnumerable<byte[]> SolveCoreAsync(ReadOnlyMemory<byte> header,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         if (header.Length != 140) throw new ArgumentException("Expected one 140-byte ZEC header.");
@@ -105,22 +123,28 @@ public sealed class PinnedProcessSolver : IMiningWorkSolver
             // A selected backend receives no header until its affinity is enforced.
             // Include this setup in cleanup so a failed affinity assignment cannot
             // leave a process waiting for input after Start/Stop returns.
-            ApplyAffinity(process, affinity);
+            ApplyAffinity(process, affinity, timeout.Token);
             try { process.PriorityClass = ProcessPriorityClass.BelowNormal; }
             catch (Exception e) when (e is Win32Exception or InvalidOperationException or PlatformNotSupportedException) { }
             budget = WatchBudgetAsync(process, timeout);
             errors = DrainErrorAsync(process.StandardError.BaseStream, timeout);
-            await process.StandardInput.WriteLineAsync(Convert.ToHexString(header.Span).AsMemory(), timeout.Token);
-            process.StandardInput.Close();
+            try
+            {
+                await process.StandardInput.WriteLineAsync(Convert.ToHexString(header.Span).AsMemory(), timeout.Token);
+                process.StandardInput.Close();
+            }
+            catch (IOException) when (timeout.IsCancellationRequested)
+            { throw new OperationCanceledException(timeout.Token); }
             var reader = new BoundedLineReader(process.StandardOutput.BaseStream, 2688);
             int count = 0;
-            while (await reader.ReadAsync(timeout.Token) is { } line)
+            while (await ReadSolverLineAsync(reader, timeout.Token) is { } line)
             {
                 if (++count > 64) throw new InvalidDataException("Solver emitted too many solutions for one nonce.");
                 yield return ZecStratumProtocol.Hex(line, 1344);
             }
             await process.WaitForExitAsync(timeout.Token);
             await errors;
+            timeout.Token.ThrowIfCancellationRequested();
             if (process.ExitCode == 124) throw new OperationCanceledException("Solver reached its cooperative time budget.");
             if (process.ExitCode != 0) throw new IOException("Solver exited unsuccessfully.");
         }
@@ -130,6 +154,12 @@ public sealed class PinnedProcessSolver : IMiningWorkSolver
             try { await process.WaitForExitAsync(CancellationToken.None); } catch (InvalidOperationException) { }
             try { await budget; await errors; } catch (OperationCanceledException) { }
         }
+    }
+    private static async Task<string?> ReadSolverLineAsync(BoundedLineReader reader, CancellationToken cancellationToken)
+    {
+        try { return await reader.ReadAsync(cancellationToken); }
+        catch (IOException) when (cancellationToken.IsCancellationRequested)
+        { throw new OperationCanceledException(cancellationToken); }
     }
     private async Task WatchBudgetAsync(Process process, CancellationTokenSource budget)
     {
@@ -154,4 +184,21 @@ public sealed class PinnedProcessSolver : IMiningWorkSolver
     }
     private static void Kill(Process process)
     { try { if (!process.HasExited) process.Kill(entireProcessTree: true); } catch (InvalidOperationException) { } }
+}
+
+// A failed local solver must never be treated as a recoverable pool disconnect.
+public sealed class SolverFailureException : IOException
+{
+    public string Reason { get; }
+    public SolverFailureException(IOException error) : base("Local solver failed; stopped without replay.", error)
+    {
+        Reason = error.Message switch
+        {
+            "Solver exited unsuccessfully." => "solver-exit",
+            "Solver could not start." => "solver-start",
+            "Solver CPU affinity did not match its required limits." => "solver-affinity",
+            "Could not enforce solver CPU affinity before delivering work." => "solver-affinity",
+            _ => "solver-io"
+        };
+    }
 }

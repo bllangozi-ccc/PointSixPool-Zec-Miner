@@ -44,7 +44,10 @@ def run():
  with os.fdopen(fd,'a')as lock:
   try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
   except BlockingIOError:raise ValueError('This saved worker is already running.')
-  def stop(signum=None,frame=None):miner.stop()
+  requested_stop=False
+  def stop(signum=None,frame=None):
+   nonlocal requested_stop
+   requested_stop=True;miner.stop()
   signal.signal(signal.SIGTERM,stop);signal.signal(signal.SIGINT,stop);miner.start(v)
   try:
    while miner.RUNNER.is_alive():miner.RUNNER.join(.5)
@@ -52,7 +55,7 @@ def run():
   finally:miner.stop()
   # Only an explicitly completed bounded session may be restarted by systemd.
   # Errors and uncertain acknowledgements exit nonzero and remain held.
-  return 0 if completed else 2
+  return 0 if completed or requested_stop else 2
 
 def setup():
  miner.verify();print('PointSixPool ZEC MICRO · 0.6% pool fee\nEnter public details only. Saving these choices starts your miner. Ctrl+C cancels.')

@@ -32,4 +32,13 @@ class Reports(unittest.TestCase):
   o=Broken()
   with self.assertRaises(m.ReportError):m.submit(VALUE,o)
   self.assertEqual(o.calls,1)
+ def test_network_errors_are_classified_without_private_details(self):
+  import socket,ssl
+  for reason,code in [(socket.gaierror('PRIVATE'),'P6R-E201'),(ssl.SSLCertVerificationError('PRIVATE'),'P6R-E202'),(TimeoutError('PRIVATE'),'P6R-E203'),(OSError('PRIVATE'),'P6R-E204')]:
+   class Broken:
+    calls=0
+    def open(self,*a,**k):self.calls+=1;raise urllib.error.URLError(reason)
+   o=Broken()
+   with self.assertRaises(m.ReportError) as caught:m.submit(VALUE,o)
+   self.assertIn(code,str(caught.exception));self.assertNotIn('PRIVATE',str(caught.exception));self.assertEqual(o.calls,1)
 if __name__=='__main__':unittest.main()

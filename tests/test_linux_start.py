@@ -25,4 +25,9 @@ class LinuxStart(unittest.TestCase):
   with patch.object(m.miner,'RUNNER',types.SimpleNamespace(is_alive=lambda:False)),patch.dict(m.miner.STATE,{'state':'A submitted share has an uncertain acknowledgement.'}),patch.object(m.signal,'signal'):self.assertEqual(m.run(),2)
  def test_completed_bounded_session_may_continue(self):
   with patch.object(m.miner,'RUNNER',types.SimpleNamespace(is_alive=lambda:False)),patch.dict(m.miner.STATE,{'state':'Selected run time completed.'}),patch.object(m.signal,'signal'):self.assertEqual(m.run(),0)
+ def test_requested_sigterm_is_clean_stop(self):
+  handlers={}
+  runner=types.SimpleNamespace(is_alive=lambda:False)
+  def start(value):handlers[m.signal.SIGTERM](m.signal.SIGTERM,None)
+  with patch.object(m.miner,'RUNNER',runner),patch.dict(m.miner.STATE,{'state':'Stopped by user.'}),patch.object(m.signal,'signal',side_effect=lambda sig,handler:handlers.update({sig:handler})),patch.object(m.miner,'start',side_effect=start):self.assertEqual(m.run(),0)
 if __name__=='__main__':unittest.main()

@@ -65,7 +65,7 @@ public sealed class ZecStratumMiner
                     await session.RunAsync(run.Token);
                     reason = options.Mine ? "share-limit" : "probe-complete"; break;
                 }
-                catch (Exception e) when ((e is IOException or SocketException or TimeoutException) && !run.IsCancellationRequested)
+                catch (Exception e) when ((e is IOException or SocketException or TimeoutException) && e is not (SolverFailureException or InvalidDataException or StratumRequestRejectedException) && !run.IsCancellationRequested)
                 {
                     // A transport failure after submission may hide a committed
                     // share. Preserve its counters and stop before any reconnect;
@@ -76,7 +76,12 @@ public sealed class ZecStratumMiner
                         progress?.Invoke(new("uncertain", "Submitted work has no acknowledgement. Mining stopped; the proof is never replayed."));
                         break;
                     }
-                    if (attempt >= options.ReconnectAttempts) throw;
+                    if (attempt >= options.ReconnectAttempts)
+                    {
+                        reason = "connection-ended";
+                        progress?.Invoke(new("connection-ended", "Pool connection ended with all submitted shares acknowledged. Fresh work may be requested; previous proofs are discarded."));
+                        break;
+                    }
                     progress?.Invoke(new("reconnect", "Connection ended; reconnecting only to the explicitly selected pool. Previous work is discarded."));
                     await Task.Delay(TimeSpan.FromSeconds(1), run.Token);
                 }

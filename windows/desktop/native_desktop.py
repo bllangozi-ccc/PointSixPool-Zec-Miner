@@ -13,7 +13,7 @@ import miner_report
 
 class MinerWindow:
  def __init__(self,root,backend):
-  self.root=root;self.b=backend;self.busy=False;self.closing=False;self.running=False;self.setting_auto=False;self.auto_mode=True
+  self.root=root;self.b=backend;self.busy=False;self.closing=False;self.running=False;self.last_report_error='';self.setting_auto=False;self.auto_mode=True
   root.title('PointSixPool Miner');icon_root=Path(sys._MEIPASS) if getattr(sys,'frozen',False) else Path(__file__).resolve().parents[2];self.icon=tk.PhotoImage(file=str(icon_root/'assets/pointsixpool.png'));root.iconphoto(True,self.icon);root.geometry('1000x790');root.minsize(860,700);root.configure(bg='#f3f5f4');root.protocol('WM_DELETE_WINDOW',self.close)
   theme(root);header=Header(root,self.icon);header.pack(fill='x',padx=12,pady=(10,8))
   tabs=ttk.Notebook(root);tabs.pack(fill='both',expand=True,padx=20,pady=(0,10));dash=ttk.Frame(tabs,padding=14);devices=ttk.Frame(tabs,padding=24);help_page=ttk.Frame(tabs,padding=24)
@@ -25,7 +25,7 @@ class MinerWindow:
   ttk.Label(setup,text='Add worker name').grid(row=2,column=0,sticky='w',pady=5);ttk.Label(setup,text='Choose coin').grid(row=2,column=1,sticky='w',padx=(12,0));self.worker_box=ttk.Entry(setup,textvariable=self.worker);self.worker_box.grid(row=3,column=0,sticky='ew');self.coin_box=ttk.Combobox(setup,textvariable=self.coin,values=['ZEC'],state='readonly');self.coin_box.grid(row=3,column=1,sticky='ew',padx=(12,0))
   self.region=tk.StringVar(value='EU');ttk.Label(setup,text='Region · MICRO mode').grid(row=4,column=0,sticky='w',pady=(10,0));self.region_box=ttk.Combobox(setup,textvariable=self.region,values=['EU','USA','ASIA'],state='readonly');self.region_box.grid(row=5,column=0,sticky='ew');self.region_note=tk.StringVar(value='EU · zec4.pointsixpool.com:3034 · Currently served in EU');ttk.Label(setup,textvariable=self.region_note,wraplength=235).grid(row=5,column=1,sticky='w',padx=(12,0));self.region_box.bind('<<ComboboxSelected>>',lambda event:self.select_region())
   ttk.Label(setup,textvariable=self.thread_label).grid(row=6,column=0,columnspan=2,sticky='w',pady=(16,0));self.slider=ttk.Scale(setup,from_=1,to=min(4,len(backend.available_cpus())),command=self.performance);self.slider.bind('<ButtonPress-1>',lambda e:setattr(self,'auto_mode',False));self.slider.bind('<KeyPress>',lambda e:setattr(self,'auto_mode',False));self.slider.set(1);self.slider.grid(row=7,column=0,columnspan=2,sticky='ew');self.speed_hint=None;self.slider.bind('<Enter>',self.show_speed_hint);self.slider.bind('<Leave>',self.hide_speed_hint);self.slider.bind('<FocusOut>',self.hide_speed_hint);self.auto_button=ttk.Button(setup,text='Auto · recommended',command=self.auto_performance);self.auto_button.grid(row=8,column=0,columnspan=2,sticky='e',pady=6);self.auto_performance();ttk.Label(setup,text='Stop mining to adjust performance.',style='Muted.TLabel').grid(row=9,column=0,columnspan=2,sticky='w',pady=6)
-  powerrow=ttk.Frame(live);powerrow.pack(fill='x',pady=(8,12));self.power=ttk.Button(powerrow,text='▶  Start Mining',style='Primary.TButton',command=self.toggle);self.power.pack(side='left');self.status=tk.StringVar(value='Ready. Mining is off.');status_row=ttk.Frame(live);status_row.pack(fill='x');self.fan=FanIndicator(status_row);self.fan.pack(side='left');self.quick_report=ttk.Button(powerrow,text='Report error',command=self.report_error);self.quick_report.pack(side='right',padx=(6,0));self.quick_report.state(['disabled']);ttk.Label(status_row,textvariable=self.status,wraplength=380,anchor='w',justify='left').pack(side='left',fill='x',expand=True)
+  powerrow=ttk.Frame(live);powerrow.pack(fill='x',pady=(8,12));self.power=ttk.Button(powerrow,text='▶  Start Mining',style='Primary.TButton',command=self.toggle);self.power.pack(side='left');self.status=tk.StringVar(value='Ready. Mining is off.');status_row=ttk.Frame(live);status_row.pack(fill='x');self.fan=FanIndicator(status_row);self.fan.pack(side='left');self.quick_report=ttk.Button(powerrow,text='Report error',command=self.report_error);self.quick_report.pack(side='right',padx=(6,0));self.quick_report.state(['disabled']);ttk.Button(powerrow,text='Copy diagnostics',command=self.copy_error).pack(side='right',padx=(6,0));ttk.Label(status_row,textvariable=self.status,wraplength=380,anchor='w',justify='left').pack(side='left',fill='x',expand=True)
   metrics=ttk.Frame(live,padding=(0,6));metrics.pack(fill='x');self.counts={}
   for i,(key,title)in enumerate([('accepted','Accepted shares'),('rejected','Rejected shares'),('uncertain','Uncertain shares')]):
    f=ttk.Frame(metrics,padding=(6,0));f.grid(row=i,column=0,sticky='ew',pady=0);metrics.columnconfigure(0,weight=1);ttk.Label(f,text=title,style='Muted.TLabel').pack(side='left');v=tk.StringVar(value='0');self.counts[key]=v;ttk.Label(f,textvariable=v,style='Rejected.Metric.TLabel' if key=='rejected'else'Uncertain.Metric.TLabel'if key=='uncertain'else'Metric.TLabel').pack(side='right')
@@ -46,27 +46,31 @@ class MinerWindow:
   summary='PointSixPool Miner · Windows · '+code.group()
   exit_code=re.search(r'Engine exit (-?\d+)',state)
   if exit_code:summary+=' · engine exit '+exit_code.group(1)
-  error_type=re.search(r'Engine exit -?\d+ · ([A-Za-z.]{1,80})\.',state)
+  error_type=re.search(r'Engine exit -?\d+ · ([A-Za-z.]{1,80})(?:\.| ·)',state)
   if error_type:summary+=' · '+error_type.group(1)
-  return summary
+  reason=re.search(r' · (solver-exit|solver-start|solver-affinity|solver-io|engine-error)\.',state)
+  if reason:summary+=' · '+reason.group(1)
+  return summary+('\n'+self.last_report_error if self.last_report_error else '')
  def copy_error(self):
   self.root.clipboard_clear();self.root.clipboard_append(self.error_summary());messagebox.showinfo('Miner diagnostics','Copied the error code and engine exit status. No wallet, mining ID or credentials were included.',parent=self.root)
  def report_error(self):
   with self.b.LOCK:state=dict(self.b.STATE)
   text=state.get('state','');code=re.search(r'P6M-E\d{3}',text)
   if not code:messagebox.showinfo('Report miner error','No engine error code is available yet.',parent=self.root);return
-  value={'error_code':code.group(),'version':'0.6.0-beta5','threads':self.threads.get(),'run_hours':self.hours.get(),'accepted':state['accepted'],'rejected':state['rejected'],'uncertain':state['uncertain']}
+  value={'error_code':code.group(),'version':'0.6.0-beta6','threads':self.threads.get(),'run_hours':self.hours.get(),'accepted':state['accepted'],'rejected':state['rejected'],'uncertain':state['uncertain']}
   exit_code=re.search(r'Engine exit (-?\d+)',text)
   if exit_code:value['engine_exit']=int(exit_code.group(1))
-  error_type=re.search(r'Engine exit -?\d+ · ([A-Za-z.]{1,80})\.',text)
+  error_type=re.search(r'Engine exit -?\d+ · ([A-Za-z.]{1,80})(?:\.| ·)',text)
   if error_type:value['error_type']=error_type.group(1)
+  reason=re.search(r' · (solver-exit|solver-start|solver-affinity|solver-io|engine-error)\.',text)
+  if reason:value['engine_reason']=reason.group(1)
   if self.report_busy:return
   self.report_busy=True;self.report_button.state(['disabled']);self.quick_report.state(['disabled'])
   def send():
    try:
     ident=miner_report.submit(value);self.root.after(0,lambda:messagebox.showinfo('Report received','Saved in Owner Reports. Reference: '+ident,parent=self.root))
    except (miner_report.ReportError,ValueError) as error:
-    message=str(error);self.root.after(0,lambda:messagebox.showwarning('Report not confirmed',message,parent=self.root))
+    message=str(error);self.last_report_error=message;self.root.after(0,lambda:messagebox.showwarning('Report not confirmed',message,parent=self.root))
    finally:
     self.report_busy=False
     if not self.closing:self.root.after(0,lambda:self.report_button.state(['!disabled']))
