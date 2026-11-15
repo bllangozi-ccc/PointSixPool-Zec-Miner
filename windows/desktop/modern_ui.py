@@ -38,7 +38,7 @@ class Header(tk.Canvas):
   self.create_text(w-24,29,text='ZEC  /  MICRO',anchor='e',fill=GREEN,font=('Segoe UI',12,'bold'));self.create_text(w-24,51,text='0.6% pool fee',anchor='e',fill=ORANGE,font=('Segoe UI',10))
 class ShareChart(tk.Canvas):
  def __init__(self,parent):
-  super().__init__(parent,height=92,background=BG,highlightthickness=1,highlightbackground='#304159');self.points=[];self.last=None;self.bind('<Configure>',lambda e:self.draw())
+  super().__init__(parent,width=1,height=92,background=BG,highlightthickness=1,highlightbackground='#304159');self.points=[];self.last=None;self.bind('<Configure>',lambda e:self.draw())
  def sample(self,count):
   if type(count)is not int or count<0:return
   now=time.monotonic()

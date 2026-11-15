@@ -105,6 +105,7 @@ def run(v):
     for key,field in [('accepted','Accepted'),('rejected','Rejected'),('uncertain','Uncertain')]:STATE[key]=session_base[key]+final[field]
    if code==4 or final['Uncertain']or final['Submitted']!=final['Accepted']+final['Rejected']:raise ValueError('P6M-E103 · Share acknowledgement uncertain; stopped. That proof is never replayed.')
    if code not in(0,3):raise ValueError('The miner refused the configuration or runtime. Check your ID, runtime and pool status.')
+   with LOCK:STATE['state']='Session complete · connecting to fresh work…'
    STOP.wait(2) # Fresh session and fresh nonces only after an unambiguous result.
   with LOCK:
    if not STOP.is_set():STATE['state']='Selected run time completed.'
