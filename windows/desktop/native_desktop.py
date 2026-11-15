@@ -59,7 +59,7 @@ class MinerWindow:
   with self.b.LOCK:state=dict(self.b.STATE)
   text=state.get('state','');code=re.search(r'P6M-E\d{3}',text)
   if not code:messagebox.showinfo('Report miner error','No engine error code is available yet.',parent=self.root);return
-  value={'error_code':code.group(),'version':'0.6.0-beta6','threads':self.threads.get(),'run_hours':self.hours.get(),'accepted':state['accepted'],'rejected':state['rejected'],'uncertain':state['uncertain']}
+  value={'error_code':code.group(),'version':'0.6.0-beta7','threads':self.threads.get(),'run_hours':self.hours.get(),'accepted':state['accepted'],'rejected':state['rejected'],'uncertain':state['uncertain']}
   exit_code=re.search(r'Engine exit (-?\d+)',text)
   if exit_code:value['engine_exit']=int(exit_code.group(1))
   error_type=re.search(r'Engine exit -?\d+ · ([A-Za-z.]{1,80})(?:\.| ·)',text)
