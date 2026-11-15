@@ -22,6 +22,6 @@ class FanIndicator(ttk.Frame):
   for i in range(4):
    a=self.phase+i*math.pi/2;points=[]
    for x,y in shape:points.extend((20+x*math.cos(a)-y*math.sin(a),20+x*math.sin(a)+y*math.cos(a)))
-   c.create_polygon(points,fill=colour,smooth=True)
-  c.create_oval(17,17,23,23,fill=colour,outline=colour)
+   c.create_polygon(points,fill='#f88316' if self.mode=='working' else colour,smooth=True)
+  c.create_oval(13,13,27,27,fill=colour,outline=colour);c.create_text(20,20,text='.6',fill='white',font=('Segoe UI',8,'bold'))
   self.after(80,self.animate)
