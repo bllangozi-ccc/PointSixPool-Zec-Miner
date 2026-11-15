@@ -6,8 +6,8 @@ using System.Runtime.CompilerServices;
 using System.Diagnostics;
 int seconds = args.Length == 0 ? 30 : int.Parse(args[0]);
 if (seconds < 1 || seconds > 600) throw new ArgumentException("Bounded 1–600 second fixture only.");
-new SolverProcessLimits(MemoryMiB:6144,Threads:12).Validate();
-bool excessiveMemoryDenied=false;try{new SolverProcessLimits(MemoryMiB:8193,Threads:12).Validate();}catch(ArgumentException){excessiveMemoryDenied=true;}if(!excessiveMemoryDenied)throw new Exception("Solver memory ceiling was not enforced");
+string solverFixture=Path.Combine(Path.GetTempPath(),"pointsix-resource-fixture-"+Guid.NewGuid().ToString("N"));File.WriteAllText(solverFixture,"non-executed fixture");
+try{string pin=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(solverFixture)));_ = new PinnedProcessSolver(solverFixture,pin,new SolverProcessLimits(MemoryMiB:6144,Threads:12));bool excessiveMemoryDenied=false;try{_ = new PinnedProcessSolver(solverFixture,pin,new SolverProcessLimits(MemoryMiB:8193,Threads:12));}catch(ArgumentException){excessiveMemoryDenied=true;}if(!excessiveMemoryDenied)throw new Exception("Solver memory ceiling was not enforced");}finally{File.Delete(solverFixture);}
 var watch=Stopwatch.StartNew();int sessions=0,jobs=0;
 while(watch.Elapsed.TotalSeconds<seconds){var result=await Exercise(false);if(result!.StopReason!="connection-ended"||result.Submitted!=0||result.Uncertain!=0||result.Jobs<2)throw new Exception("Clean disconnect did not preserve exact result");sessions++;jobs+=result.Jobs;}
 bool denied=false;try{await Exercise(true);}catch(InvalidDataException){denied=true;}if(!denied)throw new Exception("Authorization refusal must not become a retryable transport result");
