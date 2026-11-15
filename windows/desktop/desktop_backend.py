@@ -14,7 +14,7 @@ POOL='stratum+tcp://zec4.pointsixpool.com:3034'
 REGION_POOLS={'EU':POOL,'USA':'stratum+tcp://usa.zec4.pointsixpool.com:3034','ASIA':'stratum+tcp://asia.zec4.pointsixpool.com:3034'}
 TOKEN=secrets.token_urlsafe(32)
 LOCK=threading.RLock();STOP=threading.Event();CHILD=None;RUNNER=None;TELEMETRY=None
-STATE={'running':False,'state':'Ready. Mining is off.','accepted':0,'rejected':0,'uncertain':0,'sessions':0,'accepted_work':0.,'hardware':hardware()}
+STATE={'connected':False,'running':False,'state':'Ready. Mining is off.','accepted':0,'rejected':0,'uncertain':0,'sessions':0,'accepted_work':0.,'hardware':hardware()}
 LOG=collections.deque(maxlen=40)
 
 def verify():
@@ -64,7 +64,7 @@ def stop():
  STOP.set()
  with LOCK:p=CHILD
  terminate(p)
- with LOCK:STATE['state']='Stopped by you.';STATE['running']=False
+ with LOCK:STATE['state']='Stopped by you.';STATE['running']=False;STATE['connected']=False
 
 def run(v):
  global CHILD
@@ -75,7 +75,7 @@ def run(v):
    with LOCK:
     session_base={k:STATE[k]for k in ['accepted','rejected','uncertain']}
     if STOP.is_set():break
-    CHILD=subprocess.Popen(command(v,deadline-time.monotonic()),stdout=subprocess.PIPE,stderr=subprocess.STDOUT,creationflags=subprocess.CREATE_NO_WINDOW);p=CHILD;STATE['sessions']+=1;STATE['state']='Mining MICRO. Waiting for accepted work.'
+    CHILD=subprocess.Popen(command(v,deadline-time.monotonic()),stdout=subprocess.PIPE,stderr=subprocess.STDOUT,creationflags=subprocess.CREATE_NO_WINDOW);p=CHILD;STATE['sessions']+=1;STATE['connected']=False;STATE['state']='MICRO mining. Waiting for accepted work.'
    while True:
     line=p.stdout.readline(8193)
     if not line:break
@@ -86,14 +86,16 @@ def run(v):
      elif isinstance(event,dict)and'Kind'in event:
       with LOCK:
        LOG.append(str(event.get('Kind',''))[:32]+': '+str(event.get('Message',''))[:200])
+       if event['Kind']=='authorized':STATE['connected']=True
        if event['Kind']in('accepted','rejected'):STATE[event['Kind']]+=1
+       if event['Kind']=='accepted':STATE['state']='MICRO mining · accepted shares arriving.'
        if event['Kind']=='accepted':
         target=event.get('AcceptedTarget')
         if isinstance(target,str) and re.fullmatch(r'[0-9A-Fa-f]{64}',target):STATE['accepted_work']+=2.**256/(int(target,16)+1)
         else:STATE['work_measurement_unavailable']=True
     except (ValueError,TypeError):pass
    code=p.wait(timeout=10)
-   with LOCK:CHILD=None
+   with LOCK:CHILD=None;STATE['connected']=False
    if STOP.is_set():break
    if final is None:raise ValueError('No complete miner result. Stopped; no automatic replay.')
    if not all(type(final[k])is int and final[k]>=0 for k in['Submitted','Accepted','Rejected','Uncertain']):raise ValueError('Invalid miner result; stopped.')
@@ -107,7 +109,7 @@ def run(v):
  except Exception as e:
   with LOCK:STATE['state']=str(e)[:250]
  finally:
-  with LOCK:p=CHILD;CHILD=None;STATE['running']=False
+  with LOCK:p=CHILD;CHILD=None;STATE['running']=False;STATE['connected']=False
   terminate(p)
 
 def start(value):

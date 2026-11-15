@@ -35,7 +35,9 @@ if h:k.CloseHandle(h)
 # Local browser API starts idle, rejects foreign/unauthenticated requests and invalid setup.
 p=subprocess.Popen([sys.executable,'-u',str(P/'point6miner_ui.py'),'--no-browser'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,cwd=P)
 try:
- first=p.stdout.readline();url=p.stdout.readline().strip();base,token=url.split('/#');check(base.startswith('http://127.0.0.1:'),'control UI binds loopback only')
+ first=p.stdout.readline();url=p.stdout.readline().strip();
+ if '/#'not in url:raise RuntimeError('Windows UI failed before its loopback URL: '+p.stderr.read(1200))
+ base,token=url.split('/#');check(base.startswith('http://127.0.0.1:'),'control UI binds loopback only')
  def request(path,body=None,auth=True,origin=None):
   headers={'Content-Type':'application/json'}
   if auth:headers['X-Point6-Token']=token

@@ -70,7 +70,7 @@ def run(v):
    with LOCK:
     session_base={k:STATE[k]for k in ['accepted','rejected','uncertain']}
     if STOP.is_set():break
-    CHILD=subprocess.Popen(command(v,deadline-time.monotonic()),stdout=subprocess.PIPE,stderr=subprocess.STDOUT,creationflags=subprocess.CREATE_NO_WINDOW);p=CHILD;STATE['sessions']+=1;STATE['state']='Mining MICRO. Waiting for accepted work.'
+    CHILD=subprocess.Popen(command(v,deadline-time.monotonic()),stdout=subprocess.PIPE,stderr=subprocess.STDOUT,creationflags=subprocess.CREATE_NO_WINDOW);p=CHILD;STATE['sessions']+=1;STATE['state']='MICRO mining. Waiting for accepted work.'
    while True:
     line=p.stdout.readline(8193)
     if not line:break
@@ -82,6 +82,7 @@ def run(v):
       with LOCK:
        LOG.append(str(event.get('Kind',''))[:32]+': '+str(event.get('Message',''))[:200])
        if event['Kind']in('accepted','rejected'):STATE[event['Kind']]+=1
+       if event['Kind']=='accepted':STATE['state']='MICRO mining · accepted shares arriving.'
     except (ValueError,TypeError):pass
    code=p.wait(timeout=10)
    with LOCK:CHILD=None
