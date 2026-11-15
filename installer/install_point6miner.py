@@ -1,5 +1,5 @@
 """Root installer: verified files only; creates an unelevated mining service, never starts it."""
-import os,sys,json,base64,fcntl,pathlib,subprocess,hashlib,urllib.request,tarfile,tempfile,shutil,pwd,platform
+import os,sys,json,base64,fcntl,pathlib,subprocess,hashlib,urllib.request,tarfile,tempfile,shutil,pwd,platform,stat
 sys.path.insert(0,str(pathlib.Path(__file__).resolve().parent))
 from setup_config import validate,options
 BASE=pathlib.Path('/opt/pointsixpool-miner');USER='pointsix-miner';HOME_DIR='/var/lib/pointsix-miner';ORIGIN='https://pointsixpool.com'
@@ -42,6 +42,17 @@ def atomic(path,data,mode=0o644):
   os.replace(name,path)
  finally:
   if os.path.exists(name):os.unlink(name)
+def ensure_service_home(account, home=None):
+ home=pathlib.Path(HOME_DIR if home is None else home)
+ if home.is_symlink():raise ValueError('Service home symlink refused')
+ try:st=home.lstat()
+ except FileNotFoundError:
+  home.mkdir(mode=0o700)
+  os.chown(home,account.pw_uid,account.pw_gid)
+  st=home.lstat()
+ if not stat.S_ISDIR(st.st_mode)or st.st_uid!=account.pw_uid or st.st_gid!=account.pw_gid or st.st_mode&0o022:
+  raise ValueError('Unsafe existing service home; stopped.')
+ return home
 def main():
  if os.geteuid()!=0:raise ValueError('Run installation from your root session. Mining itself runs without root.')
  if platform.system()!='Linux'or platform.machine()not in('x86_64','amd64'):raise ValueError('This download needs64-bit Linux x86_64.')
@@ -71,6 +82,7 @@ def main():
    if p.exists()and marker not in p.read_text():raise ValueError('Existing shortcut is not ours; stopped.')
   active=subprocess.run(['systemctl','is-active','--quiet','pointsixpool-miner.service'],capture_output=True).returncode==0
   if active:raise ValueError('Stop the installed miner with /stop-mining before updating. No changes to a running miner.')
+  ensure_service_home(account)
   with tempfile.TemporaryDirectory(prefix='pointsix-install-',dir=BASE)as td:
    temp=pathlib.Path(td);archive=temp/'miner.tar.gz';fetch(ARCHIVE_URL,archive,ARCHIVE_SHA256);extract(archive,temp/'expanded');roots=list((temp/'expanded').iterdir())
    if len(roots)!=1 or not roots[0].is_dir()or not(roots[0]/'Start-Server').is_file():raise ValueError('Unexpected package layout')
