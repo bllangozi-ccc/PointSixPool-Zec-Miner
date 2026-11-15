@@ -23,4 +23,11 @@ class RuntimeDiagnostics(unittest.TestCase):
   for state in self.exercise([{'Submitted':2,'Accepted':1,'Rejected':0,'Uncertain':0}],0):self.assertIn('P6M-E103',state['state'])
  def test_invalid_final_never_retried(self):
   for state in self.exercise([{'Submitted':True,'Accepted':0,'Rejected':0,'Uncertain':0}],0):self.assertIn('P6M-E102',state['state'])
+ def test_solver_exit_diagnostic_preserved_private_text_excluded(self):
+  for state in self.exercise([{'error':'SolverFailureException','reason':'solver-exit','solver_exit':-1073741819,'message':'PRIVATE wallet'}],2):
+   self.assertIn('solver-exit',state['state']);self.assertIn('solver exit -1073741819',state['state']);self.assertNotIn('PRIVATE',state['state'])
+ def test_copy_diagnostics_contains_native_exit_and_reason(self):
+  tree=ast.parse((Path(__file__).resolve().parents[1]/'windows/desktop/native_desktop.py').read_text());klass=next(n for n in tree.body if isinstance(n,ast.ClassDef));fn=next(n for n in klass.body if isinstance(n,ast.FunctionDef)and n.name=='error_summary');env={'re':re};exec(compile(ast.Module(body=[fn],type_ignores=[]),'summary','exec'),env)
+  fake=types.SimpleNamespace(b=types.SimpleNamespace(LOCK=threading.RLock(),STATE={'state':'P6M-E101 · Engine exit 2 · SolverFailureException · solver-exit · solver exit -1073741819. PRIVATE'}),last_report_error='P6R-E203 · receipt · Timeout')
+  result=env['error_summary'](fake);self.assertIn('solver-exit',result);self.assertIn('solver exit -1073741819',result);self.assertIn('P6R-E203',result);self.assertNotIn('PRIVATE',result)
 if __name__=='__main__':unittest.main()
