@@ -31,7 +31,26 @@ class MinerWindow:
   ttk.Label(dash,text='Opening this app never starts mining. Rewards require eligible work and mature pool blocks.',style='Muted.TLabel',wraplength=800).pack(anchor='w');self.messages=tk.Text(dash,height=3,font=('Consolas',9),state='disabled',bg='#f9fbfa',fg='#29483b',relief='flat');self.messages.pack(fill='both',expand=True,pady=(10,0))
   ttk.Label(devices,text='CPU mining',style='Heading.TLabel').pack(anchor='w');ttk.Label(devices,text=f'Available CPU threads in this build: {min(4,len(backend.available_cpus()))}\nAVX2 CPU required. Free RAM: 1 GiB for one thread; 0.5 GiB per extra thread.\nGPU mining is not supported by this build.\nFor temperature and automatic thermal protection, run LibreHardwareMonitor with CPU monitoring enabled. Some sensors require administrator permission. Keep it open while mining. If no supported CPU sensor is detected, temperature protection is not active.',wraplength=780).pack(anchor='w',pady=20);self.telemetry=tk.StringVar(value='Hardware telemetry: reading…');ttk.Label(devices,textvariable=self.telemetry,wraplength=780).pack(anchor='w',pady=10);ttk.Label(devices,text='Run time · hours').pack(anchor='w');self.duration=ttk.Spinbox(devices,from_=1,to=24,textvariable=self.hours,width=10);self.duration.pack(anchor='w',pady=8);ttk.Button(devices,text='Enable temperature readings · setup guide ↗',command=lambda:webbrowser.open('https://github.com/LibreHardwareMonitor/LibreHardwareMonitor')).pack(anchor='w',pady=8)
   ttk.Label(help_page,text='Start in three steps',style='Heading.TLabel').pack(anchor='w');ttk.Label(help_page,text='1. Add your public ZEC receiving wallet or registered pool ID.\n2. Name this worker and choose its performance.\n3. Press Start Mining. Press Stop to finish.\n\nZEC MICRO preset: zec4.pointsixpool.com:3034\nPool fee: 0.6% · Minimum payout: 0.001 ZEC\nRewards depend on actual blocks, maturity and eligible work.\nCPU electricity can cost more than earnings.\n\nNever enter private keys, wallet seeds or payment passphrases.',wraplength=780).pack(anchor='w',pady=20);ttk.Button(help_page,text='Open pool help ↗',command=lambda:webbrowser.open('https://pointsixpool.com/getting-started')).pack(anchor='w')
+  ttk.Button(help_page,text='Copy miner error code',command=self.copy_error).pack(anchor='w',pady=4)
+  ttk.Button(help_page,text='Troubleshoot error codes ↗',command=lambda:webbrowser.open('https://github.com/bllangozi-ccc/PointSixPool-Zec-Miner#miner-error-codes')).pack(anchor='w',pady=4)
+  ttk.Button(help_page,text='Report miner error ↗',command=self.report_error).pack(anchor='w',pady=4)
   footer=ttk.Frame(root,padding=(20,8));footer.pack(fill='x');ttk.Button(footer,text='View my stats & earnings ↗',command=lambda:webbrowser.open(portal_url('wallet'if self.kind.get()=='Wallet address'else'registered',self.identity.get().strip()))).pack(side='left',padx=(0,8));ttk.Button(footer,text='pointsixpool.com ↗',command=lambda:webbrowser.open('https://pointsixpool.com')).pack(side='left');ttk.Label(footer,text='No automatic mining or background startup service.',style='Muted.TLabel').pack(side='right');self.apply_download_setup();self.root.after(300,self.refresh)
+ def error_summary(self):
+  with self.b.LOCK:state=self.b.STATE.get('state','')
+  code=re.search(r'P6M-E\d{3}',state)
+  if not code:return 'No miner error code is available yet.'
+  summary='PointSixPool Miner · Windows · '+code.group()
+  exit_code=re.search(r'Engine exit (-?\d+)',state)
+  if exit_code:summary+=' · engine exit '+exit_code.group(1)
+  error_type=re.search(r'Engine exit -?\d+ · ([A-Za-z.]{1,80})\.',state)
+  if error_type:summary+=' · '+error_type.group(1)
+  return summary
+ def copy_error(self):
+  self.root.clipboard_clear();self.root.clipboard_append(self.error_summary());messagebox.showinfo('Miner diagnostics','Copied the error code and engine exit status. No wallet, mining ID or credentials were included.',parent=self.root)
+ def report_error(self):
+  from urllib.parse import urlencode
+  query=urlencode({'title':self.error_summary(),'body':'Please describe when mining stopped. Include your CPU thread setting and approximate run time. Do not include private keys, passwords or recovery phrases.'})
+  webbrowser.open('https://github.com/bllangozi-ccc/PointSixPool-Zec-Miner/issues/new?'+query)
  def apply_download_setup(self):
   folder=Path(sys.executable).parent if getattr(sys,'frozen',False) else Path(__file__).resolve().parents[2]
   try:

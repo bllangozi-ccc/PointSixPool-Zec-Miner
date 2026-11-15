@@ -52,3 +52,16 @@ Source availability is not a claim that modified software cannot connect elsewhe
 
 
 Development RAM update: total installed RAM and currently available RAM are different. The revised low-speed setting requires1GiB available, with an additional0.5GiB for each extra CPU thread (maximum4). Close unused applications/tabs or choose a lower speed if the check refuses startup. Drive free space is separate. Windows CI and the refreshed downloadable build must pass before this change is advertised as released.
+
+
+## Miner error codes
+
+In **Help**, choose **Copy miner error code** or **Report miner error**. The report opens a draft for you to review; it does not send automatically. It includes no wallet, mining ID or credentials.
+
+| Code | Meaning | Next step |
+|---|---|---|
+| P6M-E101 | The engine ended without its complete result. The UI shows its exit status and any reported error type. | Copy the code, exit status, CPU thread setting and approximate run time. Report these; the cause is not inferred from this code alone. |
+| P6M-E102 | The engine returned an invalid result. | Keep mining stopped and report the code. |
+| P6M-E103 | A share acknowledgement or final share accounting is uncertain. | Keep mining stopped and report the code. The submitted proof is never replayed. |
+
+A green fan shows an authorized connection; accepted shares confirm work. A stopped engine requires attention. This diagnostic update does not establish the cause of the reported five-minute Windows stops.
