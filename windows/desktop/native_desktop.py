@@ -8,7 +8,7 @@ from miner_links import portal_url
 from setup_config import load as load_setup
 from performance_policy import recommend_threads,windows_battery
 from fan_indicator import FanIndicator
-from modern_ui import theme,Header,ShareChart
+from modern_ui import theme,Header,ShareChart,MiningSignal
 import miner_report
 
 class MinerWindow:
@@ -28,7 +28,8 @@ class MinerWindow:
   powerrow=ttk.Frame(live);powerrow.pack(fill='x',pady=(8,12));self.power=ttk.Button(powerrow,text='▶  Start Mining',style='Primary.TButton',command=self.toggle);self.power.pack(side='left');self.status=tk.StringVar(value='Ready. Mining is off.');status_row=ttk.Frame(live);status_row.pack(fill='x');self.fan=FanIndicator(status_row);self.fan.pack(side='left');self.quick_report=ttk.Button(powerrow,text='Report error',command=self.report_error);self.quick_report.pack(side='right',padx=(6,0));self.quick_report.state(['disabled']);ttk.Label(status_row,textvariable=self.status,wraplength=380,anchor='w',justify='left').pack(side='left',fill='x',expand=True)
   metrics=ttk.Frame(live,padding=(0,6));metrics.pack(fill='x');self.counts={}
   for i,(key,title)in enumerate([('accepted','Accepted shares'),('rejected','Rejected shares'),('uncertain','Uncertain shares')]):
-   f=ttk.Frame(metrics,padding=6);f.grid(row=i,column=0,sticky='ew',pady=2);metrics.columnconfigure(0,weight=1);ttk.Label(f,text=title,style='Muted.TLabel').pack(side='left');v=tk.StringVar(value='0');self.counts[key]=v;ttk.Label(f,textvariable=v,style='Rejected.Metric.TLabel' if key=='rejected'else'Uncertain.Metric.TLabel'if key=='uncertain'else'Metric.TLabel').pack(side='right')
+   f=ttk.Frame(metrics,padding=(6,0));f.grid(row=i,column=0,sticky='ew',pady=0);metrics.columnconfigure(0,weight=1);ttk.Label(f,text=title,style='Muted.TLabel').pack(side='left');v=tk.StringVar(value='0');self.counts[key]=v;ttk.Label(f,textvariable=v,style='Rejected.Metric.TLabel' if key=='rejected'else'Uncertain.Metric.TLabel'if key=='uncertain'else'Metric.TLabel').pack(side='right')
+  self.mining_signal=MiningSignal(live);self.mining_signal.pack(fill='x')
   self.share_chart=ShareChart(live);self.share_chart.pack(fill='x',pady=(0,10))
   ttk.Label(live,text='Rewards follow eligible work and mature blocks.',style='Muted.TLabel',wraplength=380).pack(anchor='w');self.messages=tk.Text(live,width=1,height=2,font=('Consolas',9),state='disabled',bg='#0b111c',fg='#a5b4c8',relief='flat');self.messages.pack(fill='both',expand=True,pady=(10,0))
   ttk.Label(devices,text='CPU mining',style='Heading.TLabel').pack(anchor='w');ttk.Label(devices,text=f'Available CPU threads in this build: {min(4,len(backend.available_cpus()))}\nAVX2 CPU required. Free RAM: 1 GiB for one thread; 0.5 GiB per extra thread.\nGPU mining is not supported by this build.\nFor temperature and automatic thermal protection, run LibreHardwareMonitor with CPU monitoring enabled. Some sensors require administrator permission. Keep it open while mining. If no supported CPU sensor is detected, temperature protection is not active.',wraplength=780).pack(anchor='w',pady=20);self.telemetry=tk.StringVar(value='Hardware telemetry: reading…');ttk.Label(devices,textvariable=self.telemetry,wraplength=780).pack(anchor='w',pady=10);ttk.Label(devices,text='Run time · hours').pack(anchor='w');self.duration=ttk.Spinbox(devices,from_=1,to=24,textvariable=self.hours,width=10);self.duration.pack(anchor='w',pady=8);ttk.Button(devices,text='Enable temperature readings · setup guide ↗',command=lambda:webbrowser.open('https://github.com/LibreHardwareMonitor/LibreHardwareMonitor')).pack(anchor='w',pady=8)
@@ -116,6 +117,7 @@ class MinerWindow:
   for w in [self.address_box,self.worker_box,self.slider,self.duration,self.auto_button]:w.state(['disabled']if self.running or self.busy else['!disabled'])
   self.idtype.configure(state='disabled'if self.running or self.busy else'readonly');self.region_box.configure(state='disabled'if self.running or self.busy else'readonly')
   self.quick_report.state(['!disabled']if re.search(r'P6M-E\d{3}',s['state'])and not self.report_busy else['disabled'])
+  self.mining_signal.set_running(s['running'])
   self.share_chart.sample(s['accepted'])
   for k,v in self.counts.items():v.set(str(s[k]))
   self.messages.configure(state='normal');self.messages.delete('1.0','end');self.messages.insert('1.0','\n'.join(logs[-3:]));self.messages.configure(state='disabled');self.root.after(500,self.refresh)
