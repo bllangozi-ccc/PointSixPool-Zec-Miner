@@ -77,7 +77,7 @@ def run(v):
    with LOCK:
     session_base={k:STATE[k]for k in ['accepted','rejected','uncertain']}
     if STOP.is_set():break
-    CHILD=subprocess.Popen(command(v,deadline-time.monotonic()),stdout=subprocess.PIPE,stderr=subprocess.STDOUT,start_new_session=True);p=CHILD;STATE['sessions']+=1;STATE['state']='Mining MICRO. Waiting for accepted work.'
+    CHILD=subprocess.Popen(command(v,deadline-time.monotonic()),stdout=subprocess.PIPE,stderr=subprocess.STDOUT,start_new_session=True);p=CHILD;STATE['sessions']+=1;STATE['state']='MICRO mining. Waiting for accepted work.'
    while True:
     line=p.stdout.readline(8193)
     if not line:break
@@ -90,6 +90,7 @@ def run(v):
        LOG.append(str(event.get('Kind',''))[:32]+': '+str(event.get('Message',''))[:200])
        if event['Kind']in('accepted','rejected'):STATE[event['Kind']]+=1
        if event['Kind']=='accepted':
+        STATE['state']='MICRO mining · accepted shares arriving.'
         target=event.get('AcceptedTarget')
         if isinstance(target,str) and re.fullmatch(r'[0-9A-Fa-f]{64}',target):STATE['accepted_work']+=2.**256/(int(target,16)+1)
         else:STATE['work_measurement_unavailable']=True
