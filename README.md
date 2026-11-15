@@ -20,7 +20,7 @@ Opening or installing the application does not start mining. Root installs the L
 
 ## Performance and hardware
 
-This beta needs an x86_64 AVX2 CPU and at least **3 GiB free RAM**. It does not mine with GPUs or phones. Auto starts conservatively; stop before changing the speed control. Measured presets require at least 30 minutes, 20 accepted shares and complete energy readings.
+This beta needs an x86_64 AVX2 CPU and **1 GiB available RAM for one CPU thread, plus 0.5 GiB per extra thread**. It does not mine with GPUs or phones. Auto starts conservatively; stop before changing the speed control. Measured presets require at least 30 minutes, 20 accepted shares and complete energy readings.
 
 Supported temperature sensors trigger reduced speed at 75°C and stopping at 85°C. Missing readings remain unavailable. Windows can read an already-running compatible LibreHardwareMonitor provider; the miner installs no sensor driver. Efficiency uses acknowledged difficulty-weighted work and sampled CPU-package energy, excluding the rest of the computer. It is not a profit forecast.
 

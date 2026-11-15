@@ -45,7 +45,7 @@ Choose EU, USA or ASIA; the matching URL is selected automatically.
 All three choices currently connect to the same server in Europe.
 PPLNS and SOLO are separate pool modes; this app stays MICRO-only.
 This version uses your CPU, not your graphics cards. It requires an
-AVX2-capable 64-bit CPU and at least 3 GiB free memory.
+AVX2-capable 64-bit CPU and 1 GiB available memory for one CPU thread, plus 0.5 GiB per extra thread.
 Accepted shares mean work was accepted, not money already earned.
 Rewards need eligible work and mature pool blocks. Electricity may cost
 more than earnings. Pool fee: 0.6%. MICRO minimum payout: 0.001 ZEC.

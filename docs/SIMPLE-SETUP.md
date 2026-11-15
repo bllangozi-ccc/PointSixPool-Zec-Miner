@@ -18,7 +18,7 @@ Installation downloads and checks the exact package, handles supported missing p
 and creates a dedicated `pointsix-miner` user. The actual miner never runs as root.
 Stop with `/stop-mining`. Startup after reboot is optional and printed by the installer.
 Uncertain share acknowledgements stop the service; they do not trigger automatic replay.
-The .NET runtime is bundled. Current x86_64/AVX2 Linux and at least 3 GiB free RAM are required.
+The .NET runtime is bundled. Current x86_64/AVX2 Linux and 1 GiB available RAM for one CPU thread, plus 0.5 GiB per extra thread are required.
 
 ## Linux desktop
 

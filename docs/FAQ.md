@@ -27,7 +27,7 @@ If your file manager does not preserve executable permissions, follow its Run as
 setting for Start-Desktop. The advanced editable archive remains available.
 
 ## Which hardware and modes are supported?
-This build uses an x86_64 AVX2 CPU with at least 3 GiB free memory. It does not use GPUs
+This build uses an x86_64 AVX2 CPU with 1 GiB available memory for one CPU thread, plus 0.5 GiB per extra thread. It does not use GPUs
 or phones. It selects ZEC MICRO on port 3034. ASIC PPLNS and SOLO configurations are
 separate on the pool website. PPS+ is coming soon.
 

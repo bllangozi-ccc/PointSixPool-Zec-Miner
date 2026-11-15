@@ -1,8 +1,8 @@
 For simple instructions, open **HELP.txt** first.
 
-# PointSixPool Zec Miner — next desktop/server update
+# PointSixPool Zec Miner — desktop/server beta4
 
-This is development-source guidance. Existing published beta downloads remain unchanged until the new package is qualified and released.
+These instructions cover the beta4 release archive. Configured website downloads are updated separately; check the release notes for their deployment status.
 
 ## Windows desktop
 
@@ -14,7 +14,7 @@ Press **Stop Mining** or close the app to terminate its child mining processes. 
 
 ## Linux server
 
-From the extracted next-version package, run `./Start-Server` as your normal user. The first run asks for your wallet/ID, worker name and optional CPU-thread override. Auto is the default. Saving setup starts MICRO mining. Future runs reuse that setup.
+From the extracted Linux package, run `./Start-Server` as your normal user. The first run asks for your wallet/ID, worker name and optional CPU-thread override. Auto is the default. Saving setup starts MICRO mining. Future runs reuse that setup.
 
 - `./Start-Server --setup`: change the saved setup.
 - `./Start-Server --enable-autostart`: enable the saved worker as a supervised user service. It starts after login; reboot-before-login additionally requires administrator-enabled user lingering. The wizard reports whether that is present.
