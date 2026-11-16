@@ -16,7 +16,7 @@ Use **[the miner page](https://pointsixpool.com/point6miner)** to choose your pu
 
 Opening or installing the application does not start mining. Root installs the Linux server service; actual mining runs as the dedicated `pointsix-miner` user. Stop with `/stop-mining`. Reboot autostart is optional, with instructions printed by the installer.
 
-[Full setup instructions](docs/SIMPLE-SETUP.md) · [Setup FAQ](docs/FAQ.md) · [Pool help](https://pointsixpool.com/getting-started)
+[Zcash pool and ASIC setup guide](docs/ZCASH-POOL-SETUP.md) · [Full setup instructions](docs/SIMPLE-SETUP.md) · [Setup FAQ](docs/FAQ.md) · [Pool help](https://pointsixpool.com/getting-started)
 
 ## Performance and hardware
 
@@ -24,9 +24,9 @@ This beta needs an x86_64 AVX2 CPU and **1 GiB available RAM for one CPU thread,
 
 ### Server use and manual controls
 
-The two-step server setup offers **Shared server** (default) or **Mining Server**. Auto chooses an initial CPU allocation from the server's actual CPU affinity and available RAM. Shared leaves more headroom; Mining Server uses more of the supported capacity while retaining system headroom. Both retain the current four-thread engine limit. This is resource selection, not continuous benchmark tuning.
+The two-step server setup offers **Shared server** (default) or **Mining Server**. Auto chooses an initial CPU allocation from the server's actual CPU affinity and available RAM. Shared leaves more headroom; Mining Server uses more of the supported capacity while retaining system headroom. Auto remains capped at four threads; manual selection supports up to twelve, subject to CPU and available RAM checks. This is resource selection, not continuous benchmark tuning.
 
-You can instead choose 1–4 CPU threads and optionally enter available RAM in GB. The installer rejects choices exceeding measured capacity; an entered RAM figure can only lower the measured budget. Stop mining before rerunning setup to change server choices. Windows and Linux desktop keep their manual performance slider: stop, adjust, restart.
+You can instead choose 1–12 CPU threads and optionally enter available RAM in GB. The installer rejects choices exceeding measured capacity; an entered RAM figure can only lower the measured budget. Stop mining before rerunning setup to change server choices. Windows and Linux desktop keep their manual performance slider: stop, adjust, restart.
 
 To check memory on Windows, press **Ctrl+Shift+Esc → Performance → Memory → Available**. Use More details if needed. On the Linux server, run `free -h` and read **Available**. Use free system RAM, not drive space or GPU memory. Save work and close unused apps if RAM is low. The miner checks available RAM again when starting.
 
