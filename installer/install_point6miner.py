@@ -137,6 +137,7 @@ def main():
   ProtectHome=true
   ReadWritePaths={HOME_DIR}
   UMask=0077
+  LimitCORE=0
   MemoryMax=3G
   CPUQuota={selected_threads*100}%
   [Install]

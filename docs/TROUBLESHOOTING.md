@@ -19,3 +19,10 @@ A `form` report error occurred before submission. A `receipt` error means submis
 A disconnected pool session can reconnect to fresh work after ten seconds only when its complete result accounts for every submitted share. Genuine solver failures and uncertain shares stay stopped. An intentional Linux stop exits cleanly; stopping does not erase an earlier error or replay work.
 
 CPU temperature and power readings require supported sensors. Missing readings do not mean thermal protection is active. Available RAM, not free disk space, determines the memory limit.
+
+
+Automatic performance uses up to four CPU threads, constrained by available RAM and CPUs. Battery operation starts at one thread. The Auto button moves the slider and shows the limiting reason. Stop mining before changing speed; manual selection supports up to twelve threads when resources permit.
+
+The desktop event window keeps only the last forty messages in memory. Closing the miner discards that history. Linux retains at most twenty small crash reports, with error codes and a random server ID; routine accepted-share messages are not saved by the miner. Installed Linux services disable core files.
+
+A Linux engine exit of -6 is reported as RuntimeAbort. This identifies an abort rather than proving a memory or connection fault. If delivery is not confirmed, the bounded diagnostic remains local; no submitted proof or uncertain report is automatically replayed.

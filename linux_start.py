@@ -30,7 +30,7 @@ def install_startup():
  # systemd quoting: paths are data, never shell commands.
  def quote(s):return '"'+str(s).replace('\\','\\\\').replace('"','\\"').replace('%','%%')+'"'
  unitdir=Path.home()/'.config/systemd/user';unitdir.mkdir(parents=True,exist_ok=True)
- text='# Managed by PointSixPool setup\n[Unit]\nDescription=PointSixPool MICRO miner (saved owner setup)\nAfter=network-online.target\nWants=network-online.target\n[Service]\nType=simple\nExecStart='+quote(sys.executable)+' -B '+quote(ROOT/'linux_start.py')+' --run\nExecStopPost='+quote(sys.executable)+' -B '+quote(ROOT/'linux_start.py')+' --report-service-exit\nWorkingDirectory='+quote(ROOT)+'\nRestart=on-success\nRestartSec=10\nTimeoutStopSec=20\nKillMode=control-group\nNoNewPrivileges=true\n[Install]\nWantedBy=default.target\n'
+ text='# Managed by PointSixPool setup\n[Unit]\nDescription=PointSixPool MICRO miner (saved owner setup)\nAfter=network-online.target\nWants=network-online.target\n[Service]\nType=simple\nExecStart='+quote(sys.executable)+' -B '+quote(ROOT/'linux_start.py')+' --run\nExecStopPost='+quote(sys.executable)+' -B '+quote(ROOT/'linux_start.py')+' --report-service-exit\nWorkingDirectory='+quote(ROOT)+'\nRestart=on-success\nRestartSec=10\nTimeoutStopSec=20\nKillMode=control-group\nLimitCORE=0\nNoNewPrivileges=true\n[Install]\nWantedBy=default.target\n'
  path=unitdir/UNIT
  if path.is_symlink():raise ValueError('Startup unit path is unsafe.')
  if path.exists()and not path.read_text().startswith('# Managed by PointSixPool setup\n'):raise ValueError('An unrelated startup unit already exists; it was preserved.')

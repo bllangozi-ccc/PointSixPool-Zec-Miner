@@ -67,7 +67,7 @@ def report_failure(state,setup,error_code='P6M-E101',error_type='RuntimeError',e
  if not stat.S_ISREG(st.st_mode)or st.st_uid!=os.getuid()or st.st_mode&0o077 or st.st_size!=32:raise ValueError('Unsafe server identifier.')
  server=ident.read_text();run=invocation or os.environ.get('INVOCATION_ID')or uuid.uuid4().hex
  if not re.fullmatch('[a-f0-9]{32}',server)or not re.fullmatch('[a-f0-9]{32}',run):raise ValueError('Invalid report identifier.')
- marker=folder/('crash-'+run+'.json');v={'version':'0.6.0-beta9','server_id':server,'report_id':run,'event_utc':datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),'error_code':error_code,'error_type':error_type,'elapsed_seconds':max(0,int(elapsed))}
+ marker=folder/('crash-'+run+'.json');v={'version':'0.6.0-beta10','server_id':server,'report_id':run,'event_utc':datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),'error_code':error_code,'error_type':error_type,'elapsed_seconds':max(0,int(elapsed))}
  try:
   memory={line.split(':')[0]:int(line.split()[1])//1024 for line in Path('/proc/meminfo').read_text().splitlines()if line.startswith(('MemAvailable:','MemTotal:'))}
   v.update(memory_available_mib=memory['MemAvailable'],memory_total_mib=memory['MemTotal'],cpu_threads_available=len(os.sched_getaffinity(0)))
