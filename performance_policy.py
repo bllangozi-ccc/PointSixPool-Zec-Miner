@@ -3,10 +3,10 @@ def recommend_threads(available,free_kib,on_battery=None):
  if type(available)is not int or available<1:raise ValueError('CPU availability is unknown.')
  if type(free_kib)is not int or free_kib<0:raise ValueError('Free memory is unknown.')
  cap=min(4,available)
- if on_battery is not False:return 1
+ if on_battery is True:return 1
  # Match the same measured free-RAM boundary enforced before Start.
  memory_cap=max(1,1+(free_kib-1024*1024)//(512*1024))
- return min(cap,max(1,available//4),memory_cap)
+ return min(cap,max(1,available-1),memory_cap)
 
 def windows_battery():
  import ctypes

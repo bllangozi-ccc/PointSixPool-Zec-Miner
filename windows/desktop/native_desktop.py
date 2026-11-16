@@ -97,9 +97,16 @@ class MinerWindow:
  def performance(self,value):
   n=max(1,min(12,len(self.b.available_cpus()),round(float(value))));self.threads.set(n);self.thread_label.set(('Auto'if self.auto_mode else'Manual')+f' · {n} CPU thread'+('s'if n!=1 else''))
  def auto_performance(self):
+  if self.running or self.busy:return
+  self.setting_auto=True;self.auto_mode=True
   try:
-   n=min(recommended_measured() or 4,recommend_threads(len(self.b.available_cpus()),self.b.free_memory_kib(),windows_battery()));self.setting_auto=True;self.auto_mode=True;self.slider.set(n);self.performance(n)
-  except (OSError,ValueError):self.setting_auto=True;self.auto_mode=True;self.slider.set(1);self.performance(1)
+   cpus=len(self.b.available_cpus());memory=self.b.free_memory_kib();battery=windows_battery()
+   n=recommend_threads(cpus,memory,battery)
+   reason='Battery power' if battery is True else 'Available RAM' if n<min(4,max(1,cpus-1)) else 'Available CPUs' if n<4 else 'Recommended'
+   self.slider.set(n);self.performance(n)
+   self.thread_label.set(f'Auto · {n} CPU thread'+('s' if n!=1 else '')+' · '+reason)
+  except (OSError,ValueError):
+   self.slider.set(1);self.performance(1);self.thread_label.set('Auto · 1 CPU thread · Resource check failed')
   finally:self.setting_auto=False
  def toggle(self):
   if self.busy:return

@@ -8,6 +8,8 @@ class Runtime(unittest.TestCase):
   state,args=self.case([{'error':'IOException','message':'SECRET'}],2);self.assertEqual(state['engine_exit'],2);self.assertEqual(state['error_type'],'IOException');self.assertNotIn('SECRET',str(args));self.assertEqual(state['error_code'],'P6M-E101')
  def test_uncertain_held_reported(self):
   state,args=self.case([{'Submitted':1,'Accepted':0,'Rejected':0,'Uncertain':1}],4);self.assertEqual(state['error_code'],'P6M-E103');self.assertEqual(state['uncertain'],1)
+ def test_runtime_abort_classified(self):
+  state,args=self.case([], -6);self.assertEqual(state['error_type'],'RuntimeAbort');self.assertEqual(state['engine_exit'],-6)
  def test_native_solver_error_preserved(self):
   state,args=self.case([{'error':'SolverFailureException','reason':'solver-exit','solver_exit':-11}],2);self.assertEqual(state['solver_exit'],-11);self.assertEqual(state['engine_reason'],'solver-exit')
 if __name__=='__main__':unittest.main()

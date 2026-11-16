@@ -11,7 +11,7 @@ class Fields(HTMLParser):
 class NoRedirect(urllib.request.HTTPRedirectHandler):
  def redirect_request(self,*args,**kwargs):raise ReportError('Unexpected report redirect; nothing was confirmed.')
 def payload(value):
- allowed={'error_code','engine_exit','solver_exit','engine_reason','error_type','version','threads','accepted','rejected','uncertain','elapsed_seconds','worker','server_id','report_id','event_utc','service_result','service_exit_status','memory_available_mib','memory_total_mib','cpu_threads_available'}
+ allowed={'error_code','engine_exit','solver_exit','engine_reason','error_type','version','threads','accepted','rejected','uncertain','elapsed_seconds','worker','server_id','report_id','event_utc','service_result','service_exit_status','memory_available_mib','memory_total_mib','cpu_threads_available','runtime_marker'}
  if not isinstance(value,dict)or set(value)-allowed:raise ValueError('Unexpected diagnostic field.')
  if not re.fullmatch(r'P6M-E\d{3}',value.get('error_code','')):raise ValueError('Invalid error code.')
  for k,v in value.items():
@@ -76,6 +76,7 @@ def report_failure(state,setup,error_code='P6M-E101',error_type='RuntimeError',e
   if type(state.get(k))is int and 0<=state[k]<=10**10:v[k]=state[k]
  for k in ('engine_exit','solver_exit'):
   if type(state.get(k))is int:v[k]=state[k]
+ if state.get('runtime_marker')in('out-of-memory','stack-overflow','runtime-fatal','unhandled-exception'):v['runtime_marker']=state['runtime_marker']
  if state.get('engine_reason')in('solver-exit','solver-start','solver-affinity','solver-io','engine-error'):v['engine_reason']=state['engine_reason']
  for k in ('worker','threads'):
   if k in setup:v[k]=setup[k]
