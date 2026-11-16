@@ -1,6 +1,6 @@
 # PointSixPool Monitor — native candidate, not distributed
 
-Native Android views and SwiftUI income/worker screens use the existing public wallet-work and verified-credit APIs. Their graphs use recorded samples only. The Account tab embeds the authenticated monitoring page; it retains the website's server-side login, MFA, CSRF and payout checks. This is a monitor, never a mobile miner or wallet.
+Native Android views and SwiftUI income/worker screens use the existing public wallet-work and verified-credit APIs. Their graphs use recorded samples only. The Account button opens the authenticated monitoring page in the device browser in one tap, retaining its password manager, passkeys, Authenticator, login session, CSRF and payout checks. The native app does not receive account credentials or verification codes. This is a monitor, never a mobile miner or wallet.
 
 Public wallet credits are not proof of wallet ownership, a private account balance or withdrawable funds. Work inactivity is not proof that a machine disconnected. Missing/stale data is not displayed as zero. USD is a dated current valuation, not realised profit. Background push and native authenticated API tokens are not implemented in this candidate.
 
@@ -12,6 +12,6 @@ iOS: macOS/Xcode and XcodeGen, then `xcodegen generate` in ios/ and build the Po
 
 ## Passkeys
 
-The embedded Account view can use Authenticator fallback. Native-container passkeys must be qualified on real devices and require the platform's website/app association for the final signed application. Do not publish a claim that Face ID works in this container before that association and physical acceptance pass. The external website's passkey flow remains separate and origin-bound.
+Account authentication uses the device browser. Native-container passkeys require a verified app/website association and physical-device acceptance; this candidate does not claim that association. The external website's passkey flow remains origin-bound. Physical Face ID/fingerprint acceptance is still required before a production release.
 
 Distribution buttons must continue to identify the currently available web monitor until real, verified installable native packages exist.

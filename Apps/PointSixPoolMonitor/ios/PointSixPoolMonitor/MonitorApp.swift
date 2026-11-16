@@ -1,9 +1,8 @@
 import SwiftUI
-import WebKit
 
 struct Sample: Decodable { let hashrate: Double; let sampledUnix: Int }
 struct Worker: Decodable, Identifiable {
-    let workerId: String; let workerName: String; let walletAddress: String
+    let workerId: String; let workerName: String?; let walletAddress: String
     let hashrate5m: Double; let hashrate24h: Double; let shares24h: Int; let lastShareUnix: Int; let history: [Sample]
     var id: String { workerId }
 }
@@ -32,8 +31,8 @@ struct PriceFeed: Decodable { let available: Bool; let price: Double; let sample
     func refresh() async {
         guard !loading else { return }
         let address = wallet.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard address.range(of: "^t1[1-9A-HJ-NP-Za-km-z]{33}$", options: .regularExpression) != nil else {
-            workAvailable = false; workers = []; credit = nil; price = nil; status = "Enter your public ZEC t1 receiving address."; return
+        guard address.range(of: "^t[13][1-9A-HJ-NP-Za-km-z]{33}$", options: .regularExpression) != nil else {
+            workAvailable = false; workers = []; credit = nil; price = nil; status = "Enter your public ZEC t1/t3 receiving address."; return
         }
         loading = true; defer { loading = false }; UserDefaults.standard.set(address, forKey: "publicWallet")
         do {
@@ -74,39 +73,26 @@ struct HistoryGraph: View {
         }.frame(height: 96).accessibilityLabel("Recorded worker hashrate") }
     }
 }
-struct AccountView: UIViewRepresentable {
-    func makeUIView(context: Context) -> WKWebView {
-        let view = WKWebView(frame: .zero); view.navigationDelegate = context.coordinator
-        view.load(URLRequest(url: URL(string: "https://pointsixpool.com/mobile/")!)); return view
-    }
-    func updateUIView(_ view: WKWebView, context: Context) {}
-    func makeCoordinator() -> Coordinator { Coordinator() }
-    final class Coordinator: NSObject, WKNavigationDelegate {
-        func webView(_ webView: WKWebView, decidePolicyFor action: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-            guard let url = action.request.url else { decisionHandler(.cancel); return }
-            if url.scheme == "https", ["pointsixpool.com", "accounts.pointsixpool.com"].contains(url.host ?? ""), url.port == nil || url.port == 443 { decisionHandler(.allow) }
-            else { if ["https", "mailto"].contains(url.scheme ?? "") { UIApplication.shared.open(url) }; decisionHandler(.cancel) }
-        }
-    }
-}
 @main struct MonitorApp: App {
     @StateObject private var store = MonitorStore()
+    @State private var selectedTab = 0
+    @Environment(\.openURL) private var openURL
     @Environment(\.scenePhase) private var phase
     var body: some Scene { WindowGroup {
-        TabView {
+        TabView(selection: $selectedTab) {
             NavigationStack { List {
-                Section("Public wallet") { TextField("ZEC t1 address", text: $store.wallet).textInputAutocapitalization(.never).autocorrectionDisabled(); Button("Monitor") { Task { await store.refresh() } }.disabled(store.loading) }
+                Section("Public wallet") { TextField("ZEC t1/t3 address", text: $store.wallet).textInputAutocapitalization(.never).autocorrectionDisabled(); Button("Monitor") { Task { await store.refresh() } }.disabled(store.loading) }
                 Section("Mining credits · all time") {
                     Text(store.credit.map { String(format: "%.8f ZEC", $0) } ?? "Awaiting verified credits").font(.title2.monospacedDigit())
                     if let credit = store.credit, let price = store.price { Text((credit*price).formatted(.currency(code: "USD"))).foregroundStyle(.mint) }
                     Text("Recorded wallet credits, not a withdrawable account balance. USD is a current valuation.").font(.caption).foregroundStyle(.secondary)
                 }
                 Section { LabeledContent("Workers", value: store.workAvailable ? String(store.workers.count) : "Awaiting update"); LabeledContent("Hashrate · 5m", value: store.workAvailable ? String(format: "%.2f Sol/s", store.workers.reduce(0) { $0+$1.hashrate5m }) : "Awaiting update"); Text(store.status).font(.caption) }
-            }.navigationTitle("PointSixPool").refreshable { await store.refresh() } }.tabItem { Label("Income", systemImage: "chart.line.uptrend.xyaxis") }
+            }.navigationTitle("PointSixPool").refreshable { await store.refresh() } }.tabItem { Label("Income", systemImage: "chart.line.uptrend.xyaxis") }.tag(0)
             NavigationStack { List(store.workers) { worker in NavigationLink {
-                List { Text(worker.workerName).font(.title2); LabeledContent("5 min", value: String(format: "%.2f Sol/s", worker.hashrate5m)); LabeledContent("24 hours", value: String(format: "%.2f Sol/s", worker.hashrate24h)); HistoryGraph(samples: worker.history); Text("Last accepted share: " + Date(timeIntervalSince1970: Double(worker.lastShareUnix)).formatted()) }
-            } label: { HStack { Circle().fill(Date().timeIntervalSince1970-Double(worker.lastShareUnix)<600 ? .green : .red).frame(width: 8,height: 8); VStack(alignment: .leading) { Text(worker.workerName); Text(String(format: "%.2f Sol/s",worker.hashrate5m)).font(.caption.monospacedDigit()) } } } }.navigationTitle("Workers").refreshable { await store.refresh() } }.tabItem { Label("Workers",systemImage: "fanblades") }
-            AccountView().tabItem { Label("Account",systemImage: "person.crop.circle") }
-        }.tint(.orange).preferredColorScheme(.dark).onReceive(Timer.publish(every: 30, on: .main, in: .common).autoconnect()) { _ in if phase == .active { Task { await store.refresh() } } }.task { await store.refresh() }.onChange(of: phase) { value in if value == .active { Task { await store.refresh() } } }
+                List { Text(worker.workerName ?? ("Worker " + String(worker.workerId.prefix(8)))).font(.title2); LabeledContent("5 min", value: String(format: "%.2f Sol/s", worker.hashrate5m)); LabeledContent("24 hours", value: String(format: "%.2f Sol/s", worker.hashrate24h)); HistoryGraph(samples: worker.history); Text("Last accepted share: " + Date(timeIntervalSince1970: Double(worker.lastShareUnix)).formatted()) }
+            } label: { HStack { Circle().fill(Date().timeIntervalSince1970-Double(worker.lastShareUnix)<600 ? .green : .red).frame(width: 8,height: 8); VStack(alignment: .leading) { Text(worker.workerName ?? ("Worker " + String(worker.workerId.prefix(8)))); Text(String(format: "%.2f Sol/s",worker.hashrate5m)).font(.caption.monospacedDigit()) } } } }.navigationTitle("Workers").refreshable { await store.refresh() } }.tabItem { Label("Workers",systemImage: "fanblades") }.tag(1)
+            Color.clear.tabItem { Label("Account",systemImage: "person.crop.circle") }.tag(2)
+        }.onChange(of: selectedTab) { value in if value == 2 { selectedTab = 0; openURL(URL(string: "https://pointsixpool.com/mobile/")!) } }.tint(.orange).preferredColorScheme(.dark).onReceive(Timer.publish(every: 30, on: .main, in: .common).autoconnect()) { _ in if phase == .active { Task { await store.refresh() } } }.task { await store.refresh() }.onChange(of: phase) { value in if value == .active { Task { await store.refresh() } } }
     } }
 }
