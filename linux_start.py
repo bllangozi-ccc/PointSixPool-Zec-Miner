@@ -3,6 +3,7 @@
 from pathlib import Path
 import argparse,os,json,sys,subprocess,signal,fcntl,stat,time
 import point6miner_ui as miner
+from linux_crash_report import report_failure
 from miner_links import portal_url
 from performance_policy import recommend_threads,linux_battery
 ROOT=Path(__file__).resolve().parent
@@ -29,7 +30,7 @@ def install_startup():
  # systemd quoting: paths are data, never shell commands.
  def quote(s):return '"'+str(s).replace('\\','\\\\').replace('"','\\"').replace('%','%%')+'"'
  unitdir=Path.home()/'.config/systemd/user';unitdir.mkdir(parents=True,exist_ok=True)
- text='# Managed by PointSixPool setup\n[Unit]\nDescription=PointSixPool MICRO miner (saved owner setup)\nAfter=network-online.target\nWants=network-online.target\n[Service]\nType=simple\nExecStart='+quote(sys.executable)+' -B '+quote(ROOT/'linux_start.py')+' --run\nWorkingDirectory='+quote(ROOT)+'\nRestart=on-success\nRestartSec=10\nTimeoutStopSec=20\nKillMode=control-group\nNoNewPrivileges=true\n[Install]\nWantedBy=default.target\n'
+ text='# Managed by PointSixPool setup\n[Unit]\nDescription=PointSixPool MICRO miner (saved owner setup)\nAfter=network-online.target\nWants=network-online.target\n[Service]\nType=simple\nExecStart='+quote(sys.executable)+' -B '+quote(ROOT/'linux_start.py')+' --run\nExecStopPost='+quote(sys.executable)+' -B '+quote(ROOT/'linux_start.py')+' --report-service-exit\nWorkingDirectory='+quote(ROOT)+'\nRestart=on-success\nRestartSec=10\nTimeoutStopSec=20\nKillMode=control-group\nNoNewPrivileges=true\n[Install]\nWantedBy=default.target\n'
  path=unitdir/UNIT
  if path.is_symlink():raise ValueError('Startup unit path is unsafe.')
  if path.exists()and not path.read_text().startswith('# Managed by PointSixPool setup\n'):raise ValueError('An unrelated startup unit already exists; it was preserved.')
@@ -48,10 +49,15 @@ def run():
   def stop(signum=None,frame=None):
    nonlocal requested_stop
    requested_stop=True;miner.stop()
-  signal.signal(signal.SIGTERM,stop);signal.signal(signal.SIGINT,stop);miner.start(v)
+  signal.signal(signal.SIGTERM,stop);signal.signal(signal.SIGINT,stop);started=time.monotonic();miner.start(v)
   try:
    while miner.RUNNER.is_alive():miner.RUNNER.join(.5)
-   with miner.LOCK:completed=miner.STATE['state']=='Selected run time completed.'
+   with miner.LOCK:
+    completed=miner.STATE['state']=='Selected run time completed.';failure=dict(miner.STATE)
+   if not completed and not requested_stop:
+    try:print(json.dumps({'event':'miner-crash-report',**(failure.get('crash_report')or report_failure(failure,v,failure.get('error_code')or'P6M-E101',failure.get('error_type')or'RuntimeError',time.monotonic()-started))}),flush=True)
+    except Exception as e:print(json.dumps({'event':'miner-crash-report','delivered':False,'error_type':type(e).__name__}),flush=True)
+    print(json.dumps({'event':'miner-failure','error_code':failure.get('error_code')or'P6M-E101','engine_exit':failure.get('engine_exit'),'error_type':failure.get('error_type')or'RuntimeError'}),flush=True)
   finally:miner.stop()
   # Only an explicitly completed bounded session may be restarted by systemd.
   # Errors and uncertain acknowledgements exit nonzero and remain held.
@@ -70,7 +76,13 @@ def setup():
  print('Starting MICRO mining. Ctrl+C stops this worker.');return run()
 
 def main():
- p=argparse.ArgumentParser(description=__doc__);g=p.add_mutually_exclusive_group();g.add_argument('--run',action='store_true');g.add_argument('--setup',action='store_true');g.add_argument('--enable-autostart',action='store_true');g.add_argument('--disable-autostart',action='store_true');g.add_argument('--stop',action='store_true');g.add_argument('--status',action='store_true');a=p.parse_args()
+ p=argparse.ArgumentParser(description=__doc__);g=p.add_mutually_exclusive_group();g.add_argument('--run',action='store_true');g.add_argument('--setup',action='store_true');g.add_argument('--enable-autostart',action='store_true');g.add_argument('--disable-autostart',action='store_true');g.add_argument('--stop',action='store_true');g.add_argument('--status',action='store_true');g.add_argument('--report-service-exit',action='store_true');a=p.parse_args()
+ if a.report_service_exit:
+  if os.environ.get('SERVICE_RESULT','success')=='success':return 0
+  # Read only validated worker metadata, not memory-dependent runtime options.
+  st=CONFIG.lstat()
+  if not stat.S_ISREG(st.st_mode)or st.st_size>4096 or st.st_mode&0o007:raise ValueError('Unsafe saved setup.')
+  v=json.loads(CONFIG.read_text());result=report_failure({}, {'worker':v['worker']},'P6M-E109','ServiceFailure',service_result=os.environ.get('SERVICE_RESULT','unknown'),service_exit_status=os.environ.get('EXIT_STATUS','unknown'));print(json.dumps({'event':'service-crash-report',**result}),flush=True);return 0
  if a.disable_autostart:systemctl('disable','--now',UNIT);return 0
  if a.stop:systemctl('stop',UNIT);return 0
  if a.status:systemctl('status',UNIT);return 0

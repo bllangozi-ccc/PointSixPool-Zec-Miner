@@ -126,6 +126,7 @@ def main():
   WorkingDirectory={release}
   Environment=POINTSIX_MINER_CONFIG=/etc/pointsixpool-miner/config.json
   ExecStart={release}/Start-Server --run
+  ExecStopPost={release}/Start-Server --report-service-exit
   Restart=on-success
   RestartSec=15
   KillMode=control-group

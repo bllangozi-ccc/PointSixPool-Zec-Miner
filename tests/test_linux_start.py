@@ -5,7 +5,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 import linux_start as m
 class LinuxStart(unittest.TestCase):
  def setUp(self):
-  self.tmp=tempfile.TemporaryDirectory();self.home=Path(self.tmp.name);self.patches=[patch.object(m,'CONFIG',self.home/'config/config.json'),patch.object(m.Path,'home',return_value=self.home),patch.object(m.miner,'options',side_effect=lambda v:v),patch.object(m.miner,'verify'),patch.object(m.miner,'start'),patch.object(m.miner,'stop'),patch.object(m,'systemctl')]
+  self.tmp=tempfile.TemporaryDirectory();self.home=Path(self.tmp.name);self.patches=[patch.object(m,'CONFIG',self.home/'config/config.json'),patch.object(m.Path,'home',return_value=self.home),patch.object(m.miner,'options',side_effect=lambda v:v),patch.object(m.miner,'verify'),patch.object(m.miner,'start'),patch.object(m.miner,'stop'),patch.object(m,'systemctl'),patch.object(m,'report_failure',return_value={'delivered':True,'receipt':'invented'})]
   for p in self.patches:p.start()
   self.v={'kind':'wallet','identity':'public-test-fixture','worker':'Test','threads':1,'hours':24};m.save_config(self.v)
  def tearDown(self):
