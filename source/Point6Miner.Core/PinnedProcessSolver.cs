@@ -116,7 +116,8 @@ public sealed class PinnedProcessSolver : IMiningWorkSolver
             process.StartInfo.ArgumentList.Add(limits.Threads.ToString(System.Globalization.CultureInfo.InvariantCulture));
         }
         if (!process.Start()) throw new IOException("Solver could not start.");
-        using var kill = timeout.Token.Register(() => Kill(process));
+        var cancellationStop = new CancellationStop(() => Kill(process));
+        using var kill = timeout.Token.Register(cancellationStop.Request);
         Task budget = Task.CompletedTask, errors = Task.CompletedTask;
         try
         {
@@ -150,9 +151,12 @@ public sealed class PinnedProcessSolver : IMiningWorkSolver
         }
         finally
         {
-            timeout.Cancel(); Kill(process);
-            try { await process.WaitForExitAsync(CancellationToken.None); } catch (InvalidOperationException) { }
+            timeout.Cancel(); cancellationStop.Request();
+            try { await process.WaitForExitAsync(CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5)); }
+            catch (InvalidOperationException) { }
+            catch (TimeoutException error) { throw new IOException("Solver process did not stop within its cleanup limit.", error); }
             try { await budget; await errors; } catch (OperationCanceledException) { }
+            cancellationStop.ThrowIfFailed();
         }
     }
     private static async Task<string?> ReadSolverLineAsync(BoundedLineReader reader, CancellationToken cancellationToken)
